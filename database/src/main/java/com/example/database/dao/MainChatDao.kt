@@ -18,6 +18,9 @@ interface MainChatDao {
     @Delete
     fun delete(hasChatBean: HasChatBean)
 
+    @Query("DELETE FROM user_has_chat WHERE cur_user = :owner AND email = :who")
+    fun deleteMainChatShow(owner: String, who: String)
+
     @Query("UPDATE user_has_chat SET newest_msg = :msg, send_time = :date WHERE email = :email;")
     fun update(msg: String, date: Long, email: String)
 }

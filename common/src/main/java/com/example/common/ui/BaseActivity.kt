@@ -196,7 +196,7 @@ abstract class BaseActivity<T : ViewDataBinding, VM : BaseViewModel> : AppCompat
             .create()
         dialog?.setCanceledOnTouchOutside(false)
         dialog?.show()
-        supportActionBar?.hide();
+        supportActionBar?.hide()
     }
 
     open fun onPositiveButtonClick() {}

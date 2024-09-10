@@ -68,5 +68,21 @@ interface ApiService {
     fun setApplyStatus(@Body friendApply: FriendApply): Observable<ResBean<Nothing>>
 
     // 删除好友
+    @FormUrlEncoded
+    @POST("fri/delFriend")
+    fun deleteFri(
+        @Field("email") email: String,
+        @Field("friend") friend: String
+    ): Observable<ResBean<Nothing>>
 
+    // 批量删除好友
+    @FormUrlEncoded
+    @POST("fri/batchDelFriends")
+    fun batchDeleteFri(
+        @Field("email") friendList: List<String>,
+        @Field("who") who: String
+    ): Observable<ResBean<Nothing>>
+
+    @POST("fri/setFriStatus")
+    fun setFriendStatus(@Body userFriBean: UserFriBean): Observable<ResBean<Nothing>>
 }

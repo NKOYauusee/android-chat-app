@@ -2,15 +2,14 @@ package com.example.database.bean
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 
-@Entity("user_friend_apply_status")
+@Entity("user_friend_apply_status", primaryKeys = ["time", "target", "applicant"])
 class FriendApply {
     @ColumnInfo("target")
-    var target: String? = null
+    var target: String = ""
 
     @ColumnInfo("applicant")
-    var applicant: String? = null
+    var applicant: String = ""
 
     @ColumnInfo("applicantName")
     var applicantName: String? = null
@@ -18,7 +17,6 @@ class FriendApply {
     @ColumnInfo("info")
     var info: String? = null
 
-    @PrimaryKey
     @ColumnInfo("time")
     var time: Long = 0
 

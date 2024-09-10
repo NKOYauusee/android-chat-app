@@ -69,7 +69,7 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>() {
             val chatBean = ChatBean()
             chatBean.message = msg
 
-            chatBean.receiver = viewModel.receiver.value?.email
+            chatBean.receiver = viewModel.receiver.value?.email ?: ""
             chatBean.receiverName = viewModel.receiver.value?.username
 
             chatBean.sender = UserStatusUtil.getCurLoginUser()

@@ -20,6 +20,10 @@ object MainUserSelectHelper {
         UserDatabase.getInstance(context).getMainChatDao().delete(hasChatBean)
     }
 
+    fun deleteMainHasChatSow(context: Context, owner: String, who: String) {
+        UserDatabase.getInstance(context).getMainChatDao().deleteMainChatShow(owner, who)
+    }
+
     fun updateMsgAndTime(context: Context, msg: String, date: Long, email: String) {
         UserDatabase.getInstance(context).getMainChatDao().update(msg, date, email)
     }

@@ -6,5 +6,5 @@ import com.example.common.viewmodel.BaseViewModel
 import com.example.database.bean.UserFriBean
 
 class ChatViewModel(mApplication: Application) : BaseViewModel(mApplication) {
-    val receiver = MutableLiveData<UserFriBean>()
+    val receiver = MutableLiveData(UserFriBean())
 }

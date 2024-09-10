@@ -2,13 +2,11 @@ package com.example.database.bean
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 import java.io.Serializable
 
-@Entity("user_friend")
+@Entity("user_friend", primaryKeys = ["owner", "email"])
 class UserFriBean : Serializable {
     // 好友邮箱
-    @PrimaryKey
     @ColumnInfo("email")
     var email: String = ""
 
@@ -26,5 +24,5 @@ class UserFriBean : Serializable {
 
     // 当前用户的好友 用户隔离
     @ColumnInfo("owner")
-    var owner: String? = null
+    var owner: String = ""
 }
