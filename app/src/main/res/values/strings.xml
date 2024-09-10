@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">MyChatApp</string>
+    <string name="welcomeBack">欢迎回来</string>
+    <string name="login_to_continue">登录</string>
+    <string name="email">邮箱</string>
+    <string name="password">密码</string>
+    <string name="sign_in">登录</string>
+    <string name="create_account">创建账户?</string>
+    <string name="creating_account">创建账户</string>
+    <string name="add_image">添加头像</string>
+    <string name="not_send_msg" translatable="false">...</string>
+    <string name="hold_to_speak">按住说话</string>
+    <string name="exit">退出登录</string>
+    <string name="no_data_info">暂无任何信息哦~~~</string>
+    <string name="blacklist_friend">拉黑</string>
+    <string name="delete_friend">删除</string>
+</resources>
