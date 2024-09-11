@@ -37,4 +37,15 @@ object ChatListHelper {
         val chatBean = UserDatabase.getInstance(context).getChatDao().loadNewestMsg(key)
         MainUserSelectHelper.updateMainUser(context, chatBean)
     }
+
+    fun loadRelativeMsgWithSb(
+        context: Context,
+        owner: String,
+        who: String,
+        keyword: String
+    ): MutableList<ChatBean> {
+
+        return UserDatabase.getInstance(context).getChatDao()
+            .loadRelativeMsgWithSb(owner, who, keyword)
+    }
 }

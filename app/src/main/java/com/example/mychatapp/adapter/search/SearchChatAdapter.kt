@@ -1,0 +1,61 @@
+package com.example.mychatapp.adapter.search
+
+import android.annotation.SuppressLint
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
+import androidx.recyclerview.widget.RecyclerView
+import com.example.common.util.DateFormatUtil
+import com.example.database.bean.ChatBean
+import com.example.database.bean.UserFriBean
+import com.example.mychatapp.R
+import com.example.mychatapp.databinding.ItemSearchResBinding
+
+class SearchChatAdapter(
+    private val searchItem: String,
+    private val friend: MutableList<UserFriBean>,
+    private var chatList: MutableList<MutableList<ChatBean>>,
+) :
+    RecyclerView.Adapter<SearchChatAdapter.UserViewHolder>(), BaseAdapter {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
+//        ItemContainerUserBinding
+        val inflate: ItemSearchResBinding = DataBindingUtil.inflate(
+            LayoutInflater.from(parent.context),
+            R.layout.item_search_res,
+            parent,
+            false
+        )
+        return UserViewHolder(inflate)
+    }
+
+    override fun getItemCount(): Int {
+        return chatList.size
+    }
+
+    @SuppressLint("SetTextI18n")
+    override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
+        if (position >= friend.size || position >= chatList.size)
+            return
+
+        val who = friend[position]
+        val chats = chatList[position]
+
+
+        holder.dataBinding.textName.text = who.username!!
+        if (chats.size == 1) {
+            holder.dataBinding.textContent.text =
+                bindHighlightedItem(chats[0].message, searchItem)
+
+            holder.dataBinding.textTime.text = DateFormatUtil.getFormatTime(chats[0].sendTime)
+
+            holder.dataBinding.textTime.visibility = View.VISIBLE
+        } else {
+            holder.dataBinding.textContent.text = "${chats.size}条相关聊天记录"
+        }
+    }
+
+    class UserViewHolder(val dataBinding: ItemSearchResBinding) :
+        RecyclerView.ViewHolder(dataBinding.root)
+}

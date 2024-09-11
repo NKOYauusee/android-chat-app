@@ -17,6 +17,9 @@ interface FriendDao {
     @Query("SELECT * FROM user_friend WHERE owner = :owner")
     fun selectFriends(owner: String): MutableList<UserFriBean>
 
+    @Query("SELECT * FROM user_friend WHERE owner = :owner AND (email LIKE '%' || :word || '%' OR username LIKE '%' || :word || '%' ) ")
+    fun selectFriendsByWord(owner: String, word: String): MutableList<UserFriBean>
+
     @Query("DELETE FROM user_friend WHERE owner = :owner AND email = :friend")
     fun deleteFriend(owner: String, friend: String)
 }

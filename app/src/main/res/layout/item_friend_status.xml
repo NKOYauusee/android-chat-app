@@ -47,7 +47,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            android:text="名称"
+            android:text=""
             android:textColor="@color/primary_text"
             android:textSize="@dimen/_15ssp" />
 
@@ -58,7 +58,7 @@
             android:layout_marginStart="@dimen/_5sdp"
             android:ellipsize="end"
             android:maxLines="1"
-            android:text="2024.1.1 12:00"
+            android:text=""
             android:textColor="@color/secondary_text"
             android:textSize="@dimen/_8ssp" />
     </LinearLayout>
@@ -107,7 +107,7 @@
         android:layout_marginEnd="@dimen/_8sdp"
         android:maxLines="1"
         android:paddingEnd="2dp"
-        android:text="未同意"
+        android:text=""
         android:textColor="@color/secondary_text"
         android:textSize="@dimen/_10ssp"
         app:layout_constraintBottom_toBottomOf="@id/viewSupporter"

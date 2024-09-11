@@ -8,16 +8,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.common.util.LogUtil
 import com.example.common.util.UserStatusUtil
 import com.example.database.bean.UserFriBean
-import com.example.database.helper.MainUserSelectHelper
 import com.example.mychatapp.R
 import com.example.mychatapp.databinding.ItemContainerUserBinding
 import com.example.mychatapp.listener.UserListener
 
-class NewUserAdapter(
+class UserFriendListAdapter(
     private var friendList: MutableList<UserFriBean>,
     private var userListener: UserListener
 ) :
-    RecyclerView.Adapter<NewUserAdapter.UserViewHolder>() {
+    RecyclerView.Adapter<UserFriendListAdapter.UserViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
 //        ItemContainerUserBinding
@@ -47,8 +46,13 @@ class NewUserAdapter(
 
         // 长按事件
         holder.itemView.setOnLongClickListener {
-            holder.dataBinding.friendActionWrapper.visibility = View.VISIBLE
-            true // 返回 true 表示事件已被处理
+            var isHandler = false
+            userListener.preventLongClick {
+                if (!it) holder.dataBinding.friendActionWrapper.visibility = View.VISIBLE
+                isHandler = !it
+            }
+
+            isHandler // 返回 true 表示事件已被处理
         }
 
         holder.dataBinding.blacklistFriendBtn.setOnClickListener {

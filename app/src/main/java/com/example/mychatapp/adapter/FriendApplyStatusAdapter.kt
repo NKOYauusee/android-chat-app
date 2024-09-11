@@ -70,7 +70,6 @@ class FriendApplyStatusAdapter(
             holder.targetName.text = applyInfo.target
             holder.applyBtn.visibility = View.INVISIBLE
             holder.applyStatus.visibility = View.VISIBLE
-
             holder.applyStatus.text = ApplyStatusEnum.fromCode(applyInfo.status).description
         }
     }

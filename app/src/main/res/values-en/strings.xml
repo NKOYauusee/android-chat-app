@@ -15,4 +15,7 @@
     <string name="no_data_info">There\'s no information available~~~</string>
     <string name="delete_friend">DELETE</string>
     <string name="blacklist_friend">BLACKLIST</string>
+    <string name="friend">FRIEND</string>
+    <string name="chat_history">CHAT HISTORY</string>
+    <string name="group">GROUP</string>
 </resources>

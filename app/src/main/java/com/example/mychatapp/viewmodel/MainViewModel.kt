@@ -9,6 +9,10 @@ class MainViewModel(mApplication: Application) : BaseViewModel(mApplication) {
     val hasFriendApply = MutableLiveData<Boolean>(false)
     val searchIsClicked = MutableLiveData<Boolean>(false)
 
+    val searchContent = MutableLiveData<String>()
+    val searchHasRes = MutableLiveData<Boolean>(false)
+
+
     val username = MutableLiveData<String>("")
     val userEmail = MutableLiveData<String>("")
 }

@@ -8,4 +8,6 @@ interface UserListener {
 
     fun blackListFriend(friend: UserFriBean, callback: (() -> Unit) = {})
     fun deleteFriend(friend: UserFriBean, callback: (() -> Unit) = {})
+
+    fun preventLongClick(callback: (prevent: Boolean) -> Unit)
 }

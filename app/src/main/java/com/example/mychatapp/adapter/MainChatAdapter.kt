@@ -7,13 +7,11 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.common.common.Constants
 import com.example.common.util.DateFormatUtil
 import com.example.database.bean.HasChatBean
 import com.example.mychatapp.R
 import com.example.mychatapp.listener.MainChatListener
 import com.makeramen.roundedimageview.RoundedImageView
-import java.util.Date
 
 class MainChatAdapter(
     private var chatList: MutableList<HasChatBean>,
@@ -121,36 +119,7 @@ class MainChatAdapter(
         holder.nickName.text = chatList[position].nickname
         holder.msg.text = chatList[position].newMsg
 
-        // 获取当前日期的零点时间（即今天开始的时间）
-        val todayStart = DateFormatUtil.getStartOfDay(System.currentTimeMillis())
-
-        // 获取昨天日期的零点时间（即昨天开始的时间）
-        val yesterdayStart = todayStart - Constants.ONE_DAY
-
-        val gap: Long = Date().time - chatList[position].sendTime!!
-        when {
-            (chatList[position].sendTime!! >= todayStart) -> {
-                holder.time.text = DateFormatUtil.formatTime(chatList[position].sendTime!!, "HH:mm")
-            }
-
-            (chatList[position].sendTime!! in yesterdayStart until todayStart) -> {
-                holder.time.text =
-                    "昨天 ${DateFormatUtil.formatTime(chatList[position].sendTime!!, "HH:mm")}"
-            }
-
-            (gap in Constants.ONE_DAY * 30 until Constants.ONE_DAY * 365) -> {
-                holder.time.text =
-                    DateFormatUtil.formatTime(
-                        chatList[position].sendTime!!,
-                        "MM月dd HH:mm"
-                    )
-            }
-
-            else -> {
-                holder.time.text =
-                    DateFormatUtil.formatTime(chatList[position].sendTime!!)
-            }
-        }
+        holder.time.text = DateFormatUtil.getFormatTime(chatList[position].sendTime!!)
 
         if (!chatList[position].isRead) {
             holder.dot.visibility = View.VISIBLE

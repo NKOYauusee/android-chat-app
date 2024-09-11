@@ -42,4 +42,8 @@ interface ChatDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertChat(chat: ChatBean)
+
+
+    @Query("SELECT * FROM user_chat_table WHERE owner = :owner AND (receiver = :who OR sender = :who) AND  message LIKE '%' || :keyword || '%'")
+    fun loadRelativeMsgWithSb(owner: String, who: String, keyword: String): MutableList<ChatBean>
 }

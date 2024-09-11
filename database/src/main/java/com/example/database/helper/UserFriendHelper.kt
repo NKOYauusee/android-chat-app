@@ -18,8 +18,16 @@ object UserFriendHelper {
         return UserDatabase.getInstance(context).getFriendDao().selectFriends(email)
     }
 
+    fun selectFriendsByWords(
+        context: Context,
+        email: String,
+        keyword: String
+    ): MutableList<UserFriBean> {
+        return UserDatabase.getInstance(context).getFriendDao().selectFriendsByWord(email, keyword)
+    }
+
     fun deleteFriend(context: Context, friend: UserFriBean) {
         UserDatabase.getInstance(context).getFriendDao()
-            .deleteFriend(friend.owner!!, friend.email)
+            .deleteFriend(friend.owner, friend.email)
     }
 }

@@ -14,24 +14,34 @@ object DateFormatUtil {
     }
 
     fun getFormatTime(time: Long): String {
+        // 获取当前日期的零点时间（即今天开始的时间）
+        val todayStart = getStartOfDay(System.currentTimeMillis())
+
+        // 获取昨天日期的零点时间（即昨天开始的时间）
+        val yesterdayStart = todayStart - Constants.ONE_DAY
+
         val gap: Long = Date().time - time
         return when {
-            (gap < Constants.ONE_DAY) -> {
+            (time >= todayStart) -> {
                 formatTime(time, "HH:mm")
             }
 
-            (gap <= (Constants.ONE_DAY * 2)) -> {
-                formatTime(time, "昨天 ${formatTime(time, "HH:mm")}")
+            (time in yesterdayStart until todayStart) -> {
+                "昨天 ${formatTime(time, "HH:mm")}"
             }
 
-            (gap <= (Constants.ONE_DAY * 30)) -> {
-                formatTime(time, "MM月dd HH:mm")
+            (gap in Constants.ONE_DAY * 30 until Constants.ONE_DAY * 365) -> {
+                formatTime(
+                    time,
+                    "MM月dd HH:mm"
+                )
             }
 
             else -> {
-                formatTime(time)
+                return formatTime(time)
             }
         }
+
     }
 
 

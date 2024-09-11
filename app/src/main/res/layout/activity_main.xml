@@ -65,7 +65,7 @@
                     android:visibility="@{vm.searchIsClicked ? View.VISIBLE : View.INVISIBLE }" />
 
                 <com.makeramen.roundedimageview.RoundedImageView
-                    android:id="@+id/imageFriendSearch"
+                    android:id="@+id/imageSearch"
                     android:layout_width="@dimen/_35sdp"
                     android:layout_height="@dimen/_35sdp"
                     android:layout_gravity="end"
@@ -85,6 +85,7 @@
                 app:layout_constraintTop_toTopOf="parent">
 
                 <com.makeramen.roundedimageview.RoundedImageView
+                    android:id="@+id/imageFriendNotifyIcon"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/background_icon"

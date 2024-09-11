@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.widget.CheckBox
+import android.widget.LinearLayout
 import androidx.lifecycle.lifecycleScope
 import com.example.api.bean.MyObservable
 import com.example.api.bean.ResBean
@@ -23,7 +24,7 @@ import com.example.database.helper.MainUserSelectHelper
 import com.example.database.helper.UserFriendHelper
 import com.example.mychatapp.BR
 import com.example.mychatapp.R
-import com.example.mychatapp.adapter.NewUserAdapter
+import com.example.mychatapp.adapter.UserFriendListAdapter
 import com.example.mychatapp.components.MyToast
 import com.example.mychatapp.databinding.ActivityUserBinding
 import com.example.mychatapp.enums.FriendStatusEnum
@@ -38,7 +39,7 @@ import kotlinx.coroutines.withContext
 
 class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserListener {
     private var userFriList: MyObservable<ResBean<List<UserFriBean>>>? = null
-    private var userAdapter: NewUserAdapter? = null
+    private var userAdapter: UserFriendListAdapter? = null
     val gson = Gson()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,7 +62,7 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
             }
 
             //userAdapter = UserAdapter(dataList, this@UserActivity)
-            userAdapter = NewUserAdapter(dataList, this@UserActivity)
+            userAdapter = UserFriendListAdapter(dataList, this@UserActivity)
             dataBinding.userRecycleView.adapter = userAdapter
             loading(false)
         }
@@ -78,7 +79,7 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
                     //viewModel.userList.postValue(res.data)
                     loading(false)
                     //userAdapter = UserAdapter(dataList, this@UserActivity)
-                    userAdapter = NewUserAdapter(dataList.toMutableList(), this@UserActivity)
+                    userAdapter = UserFriendListAdapter(dataList.toMutableList(), this@UserActivity)
 
                     dataBinding.userRecycleView.adapter = userAdapter
 
@@ -107,7 +108,9 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
         }
 
         dataBinding.imgBatchManger.setOnClickListener {
-            setBatchBtnStatus()
+            isClickBatchManage = !isClickBatchManage
+            viewModel.isClickBatchManage.postValue(isClickBatchManage)
+            showBatchDelete(isClickBatchManage)
         }
 
     }
@@ -130,6 +133,11 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
 
     // 选择好友聊天
     override fun onUserClicked(friend: UserFriBean) {
+        if (isClickBatchManage) {
+            showBatchDelete(false)
+            isClickBatchManage = false
+            return
+        }
         val intent = Intent(this, ChatActivity::class.java)
         intent.putExtra(Constants.CHAT_FRIEND, friend)
         switchActivity(intent, R.anim.enter_animation, R.anim.exit_fade_out_ani)
@@ -213,6 +221,8 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
                                     friend.email
                                 )
                             }
+
+                            // TODO 是否保留该用户的聊天记录
                         }
 
                         override fun failed(e: Throwable) {
@@ -231,41 +241,40 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
         supportActionBar?.hide()
     }
 
-    // 好友操作栏
-    private var isClickBatchManage = false
-    private fun setBatchBtnStatus() {
-        isClickBatchManage = !isClickBatchManage
-        // TODO
-        viewModel.isClickBatchManage.postValue(isClickBatchManage)
-
-        if (isClickBatchManage) {
-            showBatchDelete()
-        } else {
-            showBatchDelete(View.GONE)
-        }
-
+    override fun preventLongClick(callback: (prevent: Boolean) -> Unit) {
+        callback(isClickBatchManage)
     }
 
-    private fun showBatchDelete(isShow: Int = View.VISIBLE) {
-        if (isShow != View.VISIBLE && isShow != View.GONE)
-            return
+    // 好友操作栏
+    private var isClickBatchManage = false
+
+    // 显示 隐藏多选框
+    private fun showBatchDelete(isShow: Boolean = true) {
+//        if (isShow != View.VISIBLE && isShow != View.GONE)
+//            return
 
 
         for (i in 0 until (userAdapter?.returnFriendListSize() ?: 0)) {
             dataBinding.userRecycleView.getChildAt(i)
                 .findViewById<CheckBox>(R.id.batch_delete).apply {
-                    if (isShow == View.VISIBLE) {
+                    if (isShow) {
                         translationX = -400f
                         alpha = 0f
                         animate()
                             .alpha(1f).translationX(0f).setDuration(300)
                             .setInterpolator(DecelerateInterpolator()).start()
+
+                        visibility = View.VISIBLE
+                    } else {
+                        visibility = View.GONE
                     }
-                    visibility = isShow
                 }
+
+            dataBinding.userRecycleView.getChildAt(i)
+                .findViewById<LinearLayout>(R.id.friendActionWrapper).visibility = View.INVISIBLE
         }
 
-        if (isShow == View.VISIBLE) {
+        if (isShow) {
             dataBinding.imgBatchManger.setBackgroundResource(R.drawable.background_icon_click)
             dataBinding.bottomActionBar.apply {
                 visibility = View.VISIBLE
@@ -292,12 +301,15 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (isClickBatchManage) {
                 isClickBatchManage = false
-                showBatchDelete(View.GONE)
-
+                showBatchDelete(false)
                 return true
             }
-        }
 
+//            for (i in 0 until (userAdapter?.returnFriendListSize() ?: 0)) {
+//                dataBinding.userRecycleView.getChildAt(i)
+//                    .findViewById<LinearLayout>(R.id.friendActionWrapper).visibility = View.GONE
+//            }
+        }
         return super.onKeyDown(keyCode, event)
     }
 

@@ -3,7 +3,6 @@ package com.example.mychatapp.fragments
 import android.app.AlertDialog
 import android.app.Dialog
 import android.util.Log
-import android.view.animation.DecelerateInterpolator
 import androidx.lifecycle.lifecycleScope
 import com.example.api.bean.MyObservable
 import com.example.api.bean.ResBean
@@ -51,6 +50,16 @@ class FriendApplyStatusFragment :
     }
 
     private fun initAndStartReqFriendApplyStatusList() {
+        //viewModel.hasApplyData.postValue(false)
+
+        applyAdapter = FriendApplyStatusAdapter(
+            this@FriendApplyStatusFragment,
+            mutableListOf<FriendApply>().apply {
+                add(FriendApply())
+            }
+        )
+
+        dataBinding.friendStatusList.adapter = applyAdapter
         LogUtil.info("开始请求好友申请列表")
         friendListJob?.cancel()
         friendApplyStatusList = object : MyObservable<ResBean<List<FriendApply>>>() {
@@ -71,6 +80,7 @@ class FriendApplyStatusFragment :
 
             override fun failed(e: Throwable) {
                 Log.d("xht", "failed friendApplyStatusList", e)
+                viewModel.hasApplyData.postValue(false)
             }
         }
 

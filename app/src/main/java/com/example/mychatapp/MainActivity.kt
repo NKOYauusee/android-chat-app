@@ -1,12 +1,16 @@
 package com.example.mychatapp
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -34,6 +38,7 @@ import com.example.mychatapp.adapter.MainChatAdapter
 import com.example.mychatapp.components.MyToast
 import com.example.mychatapp.databinding.ActivityMainBinding
 import com.example.mychatapp.fragments.FriendApplyStatusFragment
+import com.example.mychatapp.fragments.SearchFragment
 import com.example.mychatapp.listener.MainChatListener
 import com.example.mychatapp.util.UserUtil
 import com.example.mychatapp.viewmodel.MainViewModel
@@ -106,6 +111,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         }
         // 跳转选择好友界面
         dataBinding.fabNewChat.setOnClickListener {
+            //prepareToSearch()
+
             switchActivity(
                 this,
                 UserActivity::class.java,
@@ -114,6 +121,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
             )
 
             hideAllShownFragment()
+            dataBinding.imageFriendNotifyIcon.setImageResource(R.drawable.ic_msg)
         }
         // 退出弹窗
         dataBinding.btnLogout.setOnClickListener {
@@ -128,12 +136,56 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         dataBinding.imageFriendNotify.setOnClickListener {
             //LogUtil.info("好友申请界面")
             changeFragment(0)
+
+            if (mStack[0].isVisible) {
+                dataBinding.imageFriendNotifyIcon.setImageResource(R.drawable.ic_msg)
+            } else {
+                dataBinding.imageFriendNotifyIcon.setImageResource(R.drawable.ic_msg_click)
+            }
         }
 
-        dataBinding.imageFriendSearch.setOnClickListener {
+        dataBinding.imageSearch.setOnClickListener {
             prepareToSearch()
         }
+
+        dataBinding.searchAction.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+//                if (s.isNullOrEmpty()) {
+//                    showSearchFragment(false)
+//                    viewModel.searchContent.postValue("")
+//                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                if (s.toString().isEmpty()) {
+                    viewModel.searchContent.postValue("")
+                    showSearchFragment(false)
+                    return
+                }
+                showSearchFragment(true)
+                viewModel.searchContent.postValue(s.toString())
+            }
+        })
+
     }
+
+    private fun observeSearchRes() {
+        viewModel.searchHasRes.postValue(false)
+
+        viewModel.searchHasRes.observe(this) {
+            if (it) {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    delay(300)
+                    showSearchFragment(true)
+                }
+            }
+        }
+    }
+
 
     // 侧边栏界面的开/关
     private fun openOrCloseDrawer() {
@@ -164,9 +216,9 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
 
                 MainUserSelectHelper.updateMsgAndTime(
                     this@MainActivity,
-                    it.message!!,
+                    it.message,
                     it.sendTime,
-                    email!!
+                    email
                 )
             }
 
@@ -176,7 +228,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
                 hasChatBean.user = UserStatusUtil.getCurLoginUser()
                 //对方email
                 hasChatBean.email =
-                    if (it.sender == hasChatBean.user) it.receiver!! else it.sender!!
+                    if (it.sender == hasChatBean.user) it.receiver else it.sender
                 hasChatBean.nickname =
                     if (it.sender == hasChatBean.user) it.receiverName else it.senderName
 
@@ -231,7 +283,19 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
                 openOrCloseDrawer()
                 return true
             }
-            return hideAllShownFragment()
+
+            if (searchIsClicked) {
+                prepareToSearch()
+                searchIsClicked = !searchIsClicked
+                return true
+            }
+
+
+            return if (hideAllShownFragment())
+                super.onKeyDown(keyCode, event)
+            else {
+                true
+            }
         }
         return super.onKeyDown(keyCode, event)
     }
@@ -350,10 +414,12 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
     private fun initFragment() {
         // 0 好友申请处理页
         mStack.add(FriendApplyStatusFragment())
+        mStack.add(SearchFragment())
     }
 
     private var curFragmentId = -1
 
+    // 显示 隐藏 fragment
     @SuppressLint("DetachAndAttachSameFragment")
     private fun changeFragment(position: Int) {
         if (position >= mStack.size || position < 0)
@@ -407,7 +473,68 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         curFragmentId = position
     }
 
+    @SuppressLint("DetachAndAttachSameFragment")
+    private fun showSearchFragment(isShow: Boolean) {
+        val manager = supportFragmentManager.beginTransaction()
+
+        manager.setCustomAnimations(
+            R.anim.bottom_slide_in,
+            R.anim.bottom_slide_out,
+        )
+
+        if (isShow && !mStack[1].isVisible) {
+            LogUtil.info("visible")
+            dataBinding.chatUsersRecyclerview.apply {
+                visibility = View.INVISIBLE
+                translationY = 0f
+                alpha = 1f
+                animate().translationY(500f)
+                    .alpha(0f).setDuration(500)
+                    .setInterpolator(DecelerateInterpolator()).start()
+            }
+
+            val name = mStack[1]::class.java.name
+
+            if (!mStack[1].isVisible) {
+                if (!mStack[1].isAdded) {
+                    manager.add(R.id.fragment_container, mStack[1], name)
+                }
+
+                manager.show(mStack[1])
+            }
+        } else if (!isShow) {
+            LogUtil.info("invisible")
+            manager.hide(mStack[1])
+
+            if (mStack[1].isVisible) {
+                dataBinding.chatUsersRecyclerview.apply {
+                    visibility = View.VISIBLE
+                    translationY = 500f
+                    alpha = 0f
+                    animate().translationY(0f)
+                        .alpha(1f).setDuration(500)
+                        .setInterpolator(DecelerateInterpolator()).start()
+                }
+            } else {
+                dataBinding.chatUsersRecyclerview.apply {
+                    visibility = View.VISIBLE
+                }
+            }
+
+        }
+
+        manager.commit()
+        curFragmentId = 1
+    }
+
     private fun hideAllShownFragment(): Boolean {
+        if (mStack[0].isVisible) {
+            dataBinding.imageFriendNotifyIcon.setImageResource(R.drawable.ic_msg)
+        } else {
+            dataBinding.imageFriendNotifyIcon.setImageResource(R.drawable.ic_msg_click)
+        }
+
+
         var isBack = true
         val manager = supportFragmentManager.beginTransaction()
 
@@ -441,19 +568,36 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         searchIsClicked = !searchIsClicked
         viewModel.searchIsClicked.postValue(searchIsClicked)
         if (searchIsClicked) {
-            dataBinding.imageFriendSearch.setImageResource(R.drawable.ic_search_click)
+            dataBinding.imageSearch.setImageResource(R.drawable.ic_search_click)
             dataBinding.searchAction.visibility = View.VISIBLE
             val layoutParams = dataBinding.searchWrapper.layoutParams
-            layoutParams.width = dataBinding.imageFriendSearch.width * 5
-
+            layoutParams.width = dataBinding.imageSearch.width * 5
             dataBinding.searchWrapper.layoutParams = layoutParams
+
+            lifecycleScope.launch {
+                delay(200)
+                dataBinding.searchAction.requestFocus()
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(dataBinding.searchAction, InputMethodManager.SHOW_IMPLICIT)
+            }
+
+            // TODO
         } else {
-            dataBinding.imageFriendSearch.setImageResource(R.drawable.ic_search)
-            dataBinding.searchAction.visibility = View.INVISIBLE
+            dataBinding.imageSearch.setImageResource(R.drawable.ic_search)
+            dataBinding.searchAction.visibility = View.GONE
             val layoutParams = dataBinding.searchWrapper.layoutParams
-            layoutParams.width = dataBinding.imageFriendSearch.width
+            layoutParams.width = dataBinding.imageSearch.width
 
             dataBinding.searchWrapper.layoutParams = layoutParams
+
+            showSearchFragment(false)
+
+            lifecycleScope.launch {
+                delay(200)
+                val inputMethodManager =
+                    getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(dataBinding.searchAction.windowToken, 0)
+            }
         }
     }
 }
