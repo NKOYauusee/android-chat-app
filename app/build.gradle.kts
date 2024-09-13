@@ -88,9 +88,4 @@ dependencies {
     //imagePreview 不适配androidx
     //implementation("com.ycjiang:ImagePreview:2.3.5")
     //implementation("com.github.chrisbanes:PhotoView:1.3.1")
-
-    //implementation("com.android.support:support-fragment:25.3.1")
-    // 不用改
-    //implementation("com.ycjiang:imgepreviewlibrary:1.1.3")
-    //implementation("com.android.support:support-core-utils:28.0.0")
 }
