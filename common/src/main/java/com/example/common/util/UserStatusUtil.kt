@@ -53,12 +53,11 @@ object UserStatusUtil {
     }
 
     fun setUserId(id: Int) {
-        SpUtil.setParam(Constants.USER_ID, -1)
+        SpUtil.setParam(Constants.USER_ID, id)
     }
 
     fun getUserId(): Int {
         return SpUtil.getParam(Constants.USER_ID, -1)
     }
-
 
 }

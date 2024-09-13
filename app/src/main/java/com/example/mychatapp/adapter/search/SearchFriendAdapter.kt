@@ -36,7 +36,7 @@ class SearchFriendAdapter(
             bindHighlightedItem(friend.username!!, searchTerm) ?: friend.username
         holder.dataBinding.textContent.text =
             bindHighlightedItem(friend.email, searchTerm) ?: friend.email
-
+        // TODO
         holder.itemView.setOnClickListener {
             listener.onUserClicked(friend)
         }

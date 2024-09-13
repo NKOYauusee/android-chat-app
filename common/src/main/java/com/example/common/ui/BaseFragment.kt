@@ -3,6 +3,7 @@ package com.example.common.ui
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -118,4 +119,23 @@ abstract class BaseFragment<T : ViewDataBinding, VM : BaseViewModel> : Fragment(
 
     open fun onPositiveButtonClick() {}
     open fun onNegativeButtonClick() {}
+
+    fun switchActivity(
+        intent: Intent,
+        enterAni: Int = 0,
+        exitAni: Int = 0,
+        isFinish: Boolean = false,
+        hideSelf: Boolean = true
+    ) {
+        startActivity(intent)
+        requireActivity().overridePendingTransition(enterAni, exitAni)
+        if (isFinish) requireActivity().finish()
+        if (hideSelf) hideSelf()
+    }
+
+    private fun hideSelf() {
+        val transaction = requireActivity().supportFragmentManager.beginTransaction()
+        transaction.hide(this)
+        transaction.commit()
+    }
 }

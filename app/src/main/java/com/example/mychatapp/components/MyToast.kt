@@ -45,12 +45,12 @@ class MyToast(private val context: Context) : Toast(context) {
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply {
-                gravity = Gravity.BOTTOM
+                gravity = Gravity.TOP
                 setMargins(
                     DensityUtils.dip2px(context, 80f),
-                    0,
+                    DensityUtils.dip2px(context, DensityUtils.dip2px(context, 45f).toFloat()),
                     DensityUtils.dip2px(context, 80f),
-                    DensityUtils.dip2px(context, DensityUtils.dip2px(context, 32f).toFloat())
+                    0
                 )
             }
             addView(toastView)
@@ -71,7 +71,7 @@ class MyToast(private val context: Context) : Toast(context) {
 
     private suspend fun showToastAnimation() = withContext(Dispatchers.Main) {
         toastView?.apply {
-            translationY = 300f
+            translationY = -300f
             alpha = 0f
             animate().translationY(0f).alpha(1f).setDuration(500)
                 .setInterpolator(DecelerateInterpolator()).start()
@@ -80,7 +80,7 @@ class MyToast(private val context: Context) : Toast(context) {
     }
 
     private suspend fun hideToastAnimation() = withContext(Dispatchers.Main) {
-        toastView?.animate()?.translationY(300f)?.alpha(0f)?.setDuration(500)
+        toastView?.animate()?.translationY(-300f)?.alpha(0f)?.setDuration(500)
             ?.setInterpolator(AccelerateInterpolator())?.withEndAction {
                 toastContainer?.let {
                     val decorView = (context as? AppCompatActivity)?.window?.decorView as? ViewGroup

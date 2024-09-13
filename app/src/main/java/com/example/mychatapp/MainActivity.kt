@@ -3,6 +3,7 @@ package com.example.mychatapp
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -12,9 +13,11 @@ import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.api.bean.HttpUrl
 import com.example.api.bean.MyObservable
 import com.example.api.bean.ResBean
@@ -24,6 +27,7 @@ import com.example.common.common.DataBindingConfig
 import com.example.common.ui.BaseActivity
 import com.example.common.ui.BaseFragment
 import com.example.common.util.LogUtil
+import com.example.common.util.PermissionUtil
 import com.example.common.util.UserStatusUtil
 import com.example.database.bean.ChatBean
 import com.example.database.bean.HasChatBean
@@ -44,6 +48,7 @@ import com.example.mychatapp.util.UserUtil
 import com.example.mychatapp.viewmodel.MainViewModel
 import com.example.mychatapp.websocket.WebSocketManager
 import com.google.gson.Gson
+import com.makeramen.roundedimageview.RoundedImageView
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
@@ -71,14 +76,20 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
     // 请求结果回调
     private var friendApplyRes: MyObservable<ResBean<Int>>? = null
 
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        dataBinding.mainDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
         if (UserStatusUtil.getIsSignIn() && UserStatusUtil.getCurLoginUser().isNotBlank()) {
             MyToast(mContext).show("登录成功")
         }
 
+        if (!PermissionUtil.hasPermissions(this)) {
+            // 请求权限
+            PermissionUtil.requestPermissions(this)
+        }
+
+        dataBinding.mainDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
 
         initFragment()
         initListener()
@@ -112,6 +123,13 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         // 跳转选择好友界面
         dataBinding.fabNewChat.setOnClickListener {
             //prepareToSearch()
+
+            showSearchFragment(false)
+            if (!searchIsClicked) {
+                searchIsClicked = true
+            }
+            prepareToSearch()
+
 
             switchActivity(
                 this,
@@ -154,10 +172,10 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-//                if (s.isNullOrEmpty()) {
-//                    showSearchFragment(false)
-//                    viewModel.searchContent.postValue("")
-//                }
+                if (s.isNullOrEmpty()) {
+                    //showSearchFragment(false)
+                    viewModel.searchContent.postValue("")
+                }
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -171,21 +189,17 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
             }
         })
 
-    }
 
-    private fun observeSearchRes() {
-        viewModel.searchHasRes.postValue(false)
-
-        viewModel.searchHasRes.observe(this) {
-            if (it) {
-                lifecycleScope.launch(Dispatchers.Main) {
-                    delay(300)
-                    showSearchFragment(true)
+        viewModel.searchContent.observe(this) {
+            if (it.isNullOrEmpty()) {
+                showSearchFragment(false)
+                if (!searchIsClicked) {
+                    searchIsClicked = true
                 }
+                prepareToSearch()
             }
         }
     }
-
 
     // 侧边栏界面的开/关
     private fun openOrCloseDrawer() {
@@ -254,7 +268,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
             val list = withContext(Dispatchers.IO) {
                 MainUserSelectHelper.load(this@MainActivity, UserStatusUtil.getCurLoginUser())
             }
-            LogUtil.info(gson.toJson(list))
+            //LogUtil.info(gson.toJson(list))
             chatList.setUserList(list)
             //chatList = MainChatAdapter(list, this@MainActivity)
             dataBinding.chatUsersRecyclerview.adapter = chatList
@@ -281,12 +295,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (dataBinding.mainDrawerLayout.isDrawerOpen(GravityCompat.START)) {
                 openOrCloseDrawer()
-                return true
-            }
-
-            if (searchIsClicked) {
-                prepareToSearch()
-                searchIsClicked = !searchIsClicked
                 return true
             }
 
@@ -382,13 +390,23 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         }
     }
 
+    // 设置侧边个人显示页
     private fun setProfileContent() {
         val header = dataBinding.navView.getHeaderView(0)
+
         val username = header.findViewById<TextView>(R.id.username)
         val useEmail = header.findViewById<TextView>(R.id.email)
+        val profile = header.findViewById<RoundedImageView>(R.id.drawer_profile)
+
 
         username.text = UserStatusUtil.getUsername()
         useEmail.text = UserStatusUtil.getCurLoginUser()
+
+        LogUtil.info("头像路径 -> ${HttpUrl.IMG_URL + UserStatusUtil.getUserAvatar()}")
+
+        Glide.with(this)
+            .load(HttpUrl.IMG_URL + UserStatusUtil.getUserAvatar())
+            .into(profile)
     }
 
     // 确认 退出登录的操作
@@ -528,11 +546,12 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
     }
 
     private fun hideAllShownFragment(): Boolean {
-        if (mStack[0].isVisible) {
-            dataBinding.imageFriendNotifyIcon.setImageResource(R.drawable.ic_msg)
-        } else {
-            dataBinding.imageFriendNotifyIcon.setImageResource(R.drawable.ic_msg_click)
+        dataBinding.imageFriendNotifyIcon.setImageResource(R.drawable.ic_msg)
+
+        if (!searchIsClicked) {
+            searchIsClicked = true
         }
+        prepareToSearch()
 
 
         var isBack = true
@@ -545,7 +564,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
 
         for (f in mStack) {
             if (f.isVisible) {
-                manager.detach(f).commit()
+                manager.hide(f).commit()
                 isBack = false
             }
         }

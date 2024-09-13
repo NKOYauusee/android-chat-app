@@ -1,4 +1,4 @@
-package com.example.mychatapp.enums;
+package com.example.database.enums;
 
 public enum FriendStatusEnum {
     NORMAL(0, "正常"),  // 正常

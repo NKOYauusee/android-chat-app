@@ -41,18 +41,17 @@
                     android:layout_width="@dimen/_80sdp"
                     android:layout_height="@dimen/_80sdp"
                     android:background="@drawable/background_image"
-                    android:scaleType="centerCrop"
+                    android:scaleType="fitCenter"
                     app:riv_oval="true" />
 
                 <TextView
+                    android:id="@+id/addImageProfile"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="@string/add_image"
                     android:textColor="@color/secondary_text"
                     android:textSize="@dimen/_10ssp" />
-
-
             </FrameLayout>
 
             <EditText
@@ -128,10 +127,12 @@
 
             <TextView
                 android:id="@+id/bt_jumpTo_login"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_30sdp"
                 android:layout_marginTop="@dimen/_3sdp"
+                android:paddingTop="@dimen/_5sdp"
                 android:text="登录账户?"
+                android:textAlignment="center"
                 android:textColor="@color/primary"
                 android:textSize="@dimen/_10ssp"
                 android:textStyle="bold" />

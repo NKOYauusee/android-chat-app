@@ -60,6 +60,7 @@
                     android:inputType="text"
                     android:paddingStart="@dimen/_10sdp"
                     android:paddingEnd="@dimen/_10sdp"
+                    android:text="@{vm.searchContent}"
                     android:textColor="@color/white"
                     android:textColorHint="@color/white"
                     android:visibility="@{vm.searchIsClicked ? View.VISIBLE : View.INVISIBLE }" />

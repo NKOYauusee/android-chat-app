@@ -1,5 +1,6 @@
 package com.example.mychatapp.util
 
+import com.example.common.util.LogUtil
 import com.example.common.util.UserStatusUtil
 import com.example.database.bean.UserBean
 
@@ -14,6 +15,7 @@ object UserUtil {
         UserStatusUtil.setUserPhone(userBean.phone!!)
         UserStatusUtil.setLoginToken(userBean.token!!)
         UserStatusUtil.setUserAvatar(userBean.avatar!!)
+
         UserStatusUtil.setUserId(userBean.id!!)
     }
 }

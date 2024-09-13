@@ -172,6 +172,7 @@ abstract class BaseActivity<T : ViewDataBinding, VM : BaseViewModel> : AppCompat
     ) {
         startActivity(intent)
         overridePendingTransition(enterAni, exitAni)
+
         if (isFinish) finish()
     }
 

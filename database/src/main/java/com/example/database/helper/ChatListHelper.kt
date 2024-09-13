@@ -8,6 +8,16 @@ import com.example.database.bean.ChatBean
 import java.util.Date
 
 object ChatListHelper {
+    // 加载之前的10条消息
+    fun loadHistory10Msg(context: Context, chatBean: ChatBean): MutableList<ChatBean> {
+        val friend = if (chatBean.owner == chatBean.sender) chatBean.receiver else chatBean.sender
+
+        val res = UserDatabase.getInstance(context).getChatDao()
+            .loadHistory10Msg(chatBean.owner, chatBean.sendTime, friend)
+
+        res.reverse()
+        return res
+    }
 
     // 加载和某人最近2天的10条聊天数据
     fun loadRecentMsg(context: Context, friend: String): MutableList<ChatBean> {

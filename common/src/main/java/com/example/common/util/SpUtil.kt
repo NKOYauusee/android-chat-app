@@ -105,6 +105,7 @@ object SpUtil {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            LogUtil.info("akdhalfhalfhalkfalfalfbal")
             defaultValue
         }
     }

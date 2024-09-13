@@ -6,10 +6,14 @@ import com.example.database.bean.FriendApply
 import com.example.database.bean.UserBean
 import com.example.database.bean.UserFriBean
 import io.reactivex.Observable
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 
 interface ApiService {
     // 免登录 token验证是否有效
@@ -37,7 +41,7 @@ interface ApiService {
         @Field("email") email: String,
         @Field("password") password: String,
         @Field("code") code: String
-    ): Observable<ResBean<String>>
+    ): Observable<ResBean<UserBean>>
 
     // 获取用户的好友列表
     @FormUrlEncoded
@@ -85,4 +89,29 @@ interface ApiService {
 
     @POST("fri/setFriStatus")
     fun setFriendStatus(@Body userFriBean: UserFriBean): Observable<ResBean<Nothing>>
+
+
+    //文件上传
+    @Multipart
+    @POST("media/upload")
+    fun uploadFile(
+        @Part fileData: MultipartBody.Part,
+        @Part("userId") userId: RequestBody,
+        @Part("fileName") fileName: RequestBody,
+        @Part("fileType") fileType: RequestBody,
+        @Part("fileSize") fileSize: RequestBody
+    ): Observable<ResBean<String>>
+
+
+    // 注册带头像上传
+    @Multipart
+    @POST("user/registerWithProfile")
+    fun registerWithProfile(
+        @Part fileData: MultipartBody.Part,
+        @Part("username") username: RequestBody,
+        @Part("email") email: RequestBody,
+        @Part("password") password: RequestBody,
+        @Part("code") code: RequestBody
+    ): Observable<ResBean<UserBean>>
+
 }

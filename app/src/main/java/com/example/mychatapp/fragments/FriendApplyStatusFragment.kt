@@ -17,7 +17,7 @@ import com.example.mychatapp.R
 import com.example.mychatapp.adapter.FriendApplyStatusAdapter
 import com.example.mychatapp.components.MyToast
 import com.example.mychatapp.databinding.FragmentFriendApplyStatusListBinding
-import com.example.mychatapp.enums.ApplyStatusEnum
+import com.example.database.enums.ApplyStatusEnum
 import com.example.mychatapp.listener.FriendApplyStatusListener
 import com.example.mychatapp.viewmodel.FriendApplyViewModel
 import com.google.gson.Gson

@@ -22,7 +22,7 @@ class UserFriBean : Serializable {
     @ColumnInfo("status")
     var status: Int? = 0
 
-    // 当前用户的好友 用户隔离
+    // 当前哪个用户的好友 用户隔离
     @ColumnInfo("owner")
     var owner: String = ""
 }

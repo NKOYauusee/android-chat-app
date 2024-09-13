@@ -18,4 +18,5 @@
     <string name="friend">FRIEND</string>
     <string name="chat_history">CHAT HISTORY</string>
     <string name="group">GROUP</string>
+    <string name="choose_user_chat">Please select a user to chat with</string>
 </resources>

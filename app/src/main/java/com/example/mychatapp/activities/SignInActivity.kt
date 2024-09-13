@@ -9,7 +9,6 @@ import com.example.api.helper.ApiServiceHelper
 import com.example.common.common.DataBindingConfig
 import com.example.common.ui.BaseActivity
 import com.example.common.util.LogUtil
-import com.example.common.util.ToastUtil
 import com.example.common.util.UserStatusUtil
 import com.example.common.viewmodel.BaseViewModel
 import com.example.database.bean.UserBean
@@ -40,6 +39,7 @@ class SignInActivity : BaseActivity<ActivitySignInBinding, BaseViewModel>() {
         loginRes = object : MyObservable<ResBean<UserBean>>() {
             override fun success(res: ResBean<UserBean>) {
                 if (res.code != 200 || res.data == null || res.data!!.token.isNullOrEmpty()) {
+                    loading(false)
                     MyToast(mContext).show("登陆失败")
                     LogUtil.error("登录失败 -> " + Gson().toJson(res))
                     return
@@ -49,6 +49,7 @@ class SignInActivity : BaseActivity<ActivitySignInBinding, BaseViewModel>() {
                 setLoginStatus(res.data!!, true)
                 //ToastUtil.showToastMsg("登录成功", mContext)
                 Log.d("xht", "login success> userBean: ${Gson().toJson(res.data)}")
+
                 switchActivity(
                     this@SignInActivity,
                     MainActivity::class.java,
@@ -80,14 +81,17 @@ class SignInActivity : BaseActivity<ActivitySignInBinding, BaseViewModel>() {
 
         // 登录
         dataBinding.btSingIn.setOnClickListener {
-            loading()
 
             val email = dataBinding.loginEmail.text.toString()
             val pwd = dataBinding.loginPassword.text.toString()
+            if (email.isEmpty() || pwd.isEmpty()) {
+                MyToast(this).show("请检查输入")
+                return@setOnClickListener
+            }
             Log.d("xht", "email: $email, pwd: $pwd")
 
             // TODO 输入校验
-
+            loading()
             // 登录请求
             login(email, pwd)
         }
@@ -133,6 +137,7 @@ class SignInActivity : BaseActivity<ActivitySignInBinding, BaseViewModel>() {
                 //MyToast(mContext).show("免登录成功")
 
                 LogUtil.info("免登录成功: ${res.data}")
+
                 UserStatusUtil.setLoginToken(res.data!!)
                 UserStatusUtil.setIsSignIn(true)
 

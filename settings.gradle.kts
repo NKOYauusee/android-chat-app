@@ -10,9 +10,10 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
         //maven ("https://www.jitpack.io")
-        maven ("https://jitpack.io")
+        maven("https://jitpack.io")
         maven { url = uri("https://jitpack.io") }
         maven { url = uri("https://www.jitpack.io") }
+        maven { url = uri("https://maven.aliyun.com/nexus/content/repositories/jcenter") }
     }
 }
 dependencyResolutionManagement {
@@ -20,9 +21,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        //maven ("https://www.jitpack.io")
-        maven ("https://jitpack.io")
+        maven("https://jitpack.io")
+        maven { url = uri("https://jitpack.io") }
         maven { url = uri("https://www.jitpack.io") }
+        maven { url = uri("https://maven.aliyun.com/nexus/content/repositories/jcenter") }
     }
 }
 

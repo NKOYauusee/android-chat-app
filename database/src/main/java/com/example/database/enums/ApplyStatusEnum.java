@@ -1,4 +1,4 @@
-package com.example.mychatapp.enums;
+package com.example.database.enums;
 
 import androidx.annotation.NonNull;
 

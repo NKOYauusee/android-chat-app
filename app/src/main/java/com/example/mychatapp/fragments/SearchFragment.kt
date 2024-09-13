@@ -1,9 +1,11 @@
 package com.example.mychatapp.fragments
 
+import android.content.Intent
 import android.util.Log
 import android.view.View
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.example.common.common.Constants
 import com.example.common.common.DataBindingConfig
 import com.example.common.ui.BaseActivity
 import com.example.common.ui.BaseFragment
@@ -15,6 +17,7 @@ import com.example.database.bean.UserFriBean
 import com.example.database.helper.ChatListHelper
 import com.example.database.helper.UserFriendHelper
 import com.example.mychatapp.R
+import com.example.mychatapp.activities.ChatActivity
 import com.example.mychatapp.adapter.search.SearchChatAdapter
 import com.example.mychatapp.adapter.search.SearchFriendAdapter
 import com.example.mychatapp.databinding.FragmentSearchBinding
@@ -100,10 +103,18 @@ class SearchFragment : BaseFragment<FragmentSearchBinding, BaseViewModel>() {
                     res,
                     object : UserListener {
                         override fun onUserClicked(friend: UserFriBean) {
-
                             // TODO
+                            val intent = Intent(requireActivity(), ChatActivity::class.java)
+                            intent.putExtra(Constants.CHAT_FRIEND, friend)
 
+                            clearSearchContent()
 
+                            switchActivity(
+                                intent,
+                                R.anim.enter_animation,
+                                R.anim.exit_fade_out_ani,
+                                hideSelf = true
+                            )
                         }
 
                         override fun blackListFriend(
@@ -190,6 +201,11 @@ class SearchFragment : BaseFragment<FragmentSearchBinding, BaseViewModel>() {
             dataBinding.searchChatWrapper.visibility = View.VISIBLE
         }
     }
+
+    private fun clearSearchContent() {
+        ViewModelProvider(requireActivity())[MainViewModel::class.java].searchContent.postValue("")
+    }
+
 
 //    companion object {
 //        val instance by lazy {

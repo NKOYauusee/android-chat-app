@@ -15,5 +15,9 @@ class Constants {
         const val LOGIN_TOKEN = "LOGIN_TOKEN"
 
         const val ONE_DAY: Long = 24 * 60 * 60 * 1000
+
+
+        // 系统设置
+        const val IS_SAVE_CROP_IMAGE = "IS_SAVE_CROP_IMAGE"
     }
 }

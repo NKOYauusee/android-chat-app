@@ -10,7 +10,7 @@ import com.example.common.util.DateFormatUtil
 import com.example.common.util.UserStatusUtil
 import com.example.database.bean.FriendApply
 import com.example.mychatapp.R
-import com.example.mychatapp.enums.ApplyStatusEnum
+import com.example.database.enums.ApplyStatusEnum
 import com.example.mychatapp.listener.FriendApplyStatusListener
 import com.makeramen.roundedimageview.RoundedImageView
 

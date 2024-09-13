@@ -27,7 +27,7 @@ import com.example.mychatapp.R
 import com.example.mychatapp.adapter.UserFriendListAdapter
 import com.example.mychatapp.components.MyToast
 import com.example.mychatapp.databinding.ActivityUserBinding
-import com.example.mychatapp.enums.FriendStatusEnum
+import com.example.database.enums.FriendStatusEnum
 import com.example.mychatapp.listener.UserListener
 import com.example.mychatapp.viewmodel.UserViewModel
 import com.google.gson.Gson
