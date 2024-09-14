@@ -1,6 +1,8 @@
 package com.example.mychatapp
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -35,6 +37,7 @@ import com.example.database.bean.UserBean
 import com.example.database.bean.UserFriBean
 import com.example.database.helper.ChatListHelper
 import com.example.database.helper.MainUserSelectHelper
+import com.example.database.helper.UserFriendHelper
 import com.example.mychatapp.activities.ChatActivity
 import com.example.mychatapp.activities.SignInActivity
 import com.example.mychatapp.activities.UserActivity
@@ -44,6 +47,7 @@ import com.example.mychatapp.databinding.ActivityMainBinding
 import com.example.mychatapp.fragments.FriendApplyStatusFragment
 import com.example.mychatapp.fragments.SearchFragment
 import com.example.mychatapp.listener.MainChatListener
+import com.example.mychatapp.util.SelectMediaHelper
 import com.example.mychatapp.util.UserUtil
 import com.example.mychatapp.viewmodel.MainViewModel
 import com.example.mychatapp.websocket.WebSocketManager
@@ -57,6 +61,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.Stack
 
 class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainChatListener {
@@ -102,13 +107,16 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
     override fun onResume() {
         super.onResume()
         loadUser()
-        updateStatus()
+        getFriendList()
         initFriendApplyRes()
+
+        updateStatus()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         friendApplyJob?.cancel()
+        friendJob?.cancel()
         WebSocketManager.instance.stopConn()
     }
 
@@ -128,8 +136,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
             if (!searchIsClicked) {
                 searchIsClicked = true
             }
-            prepareToSearch()
 
+            prepareToSearch()
 
             switchActivity(
                 this,
@@ -184,6 +192,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
                     showSearchFragment(false)
                     return
                 }
+
                 showSearchFragment(true)
                 viewModel.searchContent.postValue(s.toString())
             }
@@ -193,10 +202,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         viewModel.searchContent.observe(this) {
             if (it.isNullOrEmpty()) {
                 showSearchFragment(false)
-                if (!searchIsClicked) {
-                    searchIsClicked = true
-                }
-                prepareToSearch()
             }
         }
     }
@@ -222,7 +227,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
     // 接收聊天并加载已聊天的用户
     private fun loadUser() {
         //主页消息提示
-        WebSocketManager.instance.loadMsg(this@MainActivity) {
+        WebSocketManager.instance.receiveMessage(this@MainActivity) {
             //更新数据库消息显示内容
             lifecycleScope.launch(Dispatchers.IO) {
                 val email =
@@ -248,9 +253,19 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
 
                 hasChatBean.sendTime = it.sendTime
                 hasChatBean.newMsg = it.message
-                hasChatBean.avatar = "" // TODO
+                hasChatBean.avatar = withContext(Dispatchers.IO) {
+                    UserFriendHelper.selectFriendAvatar(
+                        this@MainActivity,
+                        UserStatusUtil.getCurLoginUser(),
+                        hasChatBean.email
+                    )
+                }
+
+                LogUtil.info(gson.toJson(hasChatBean.avatar))
+
                 hasChatBean.isRead = false
-                LogUtil.info("待更新 -> ${gson.toJson(hasChatBean)}")
+                //LogUtil.info("待更新 -> ${gson.toJson(hasChatBean)}")
+
                 chatList.updateMsg(hasChatBean) {
                     chatList.notifyItemChanged(it, true)
                 }
@@ -268,15 +283,16 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
             val list = withContext(Dispatchers.IO) {
                 MainUserSelectHelper.load(this@MainActivity, UserStatusUtil.getCurLoginUser())
             }
-            //LogUtil.info(gson.toJson(list))
+            LogUtil.info("当前已发起列表" + gson.toJson(list))
             chatList.setUserList(list)
             //chatList = MainChatAdapter(list, this@MainActivity)
             dataBinding.chatUsersRecyclerview.adapter = chatList
         }
     }
 
-    // adapter 点击回调
+    // adapter 点击回调 跳转聊天界面 已读
     override fun onClicked(hasChat: HasChatBean) {
+        LogUtil.info("已读 ${gson.toJson(hasChat)}")
         lifecycleScope.launch(Dispatchers.IO) {
             MainUserSelectHelper.insert(this@MainActivity, hasChat)
         }
@@ -288,6 +304,28 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         friend.username = hasChat.nickname
         intent.putExtra(Constants.CHAT_FRIEND, friend)
         switchActivity(intent, R.anim.enter_animation, R.anim.exit_fade_out_ani)
+    }
+
+    private var dialog: Dialog? = null
+    override fun deleteMsg(target: HasChatBean, callback: () -> Unit) {
+        dialog?.dismiss()
+        dialog = AlertDialog.Builder(this)
+            .setTitle("确定删除?")
+            .setPositiveButton("确定") { dialog, _ ->
+                dialog.dismiss()
+                //friend.status = FriendStatusEnum.BLACKLIST.statusCode
+                callback()
+                lifecycleScope.launch(Dispatchers.IO) {
+                    MainUserSelectHelper.delete(this@MainActivity, target)
+                }
+            }
+            .setNegativeButton("取消") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+        dialog?.setCanceledOnTouchOutside(false)
+        dialog?.show()
+        supportActionBar?.hide()
     }
 
     //返回键监听
@@ -312,8 +350,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
     private fun loadUnReceiveMsg() {
         offlineMsg = object : MyObservable<ResBean<List<ChatBean>>>() {
             override fun success(res: ResBean<List<ChatBean>>) {
-                Log.d("xht", "offlineMsg ${gson.toJson(res.data)}")
-
                 if (res.data.isNullOrEmpty())
                     return
 
@@ -324,6 +360,9 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
                         set.add(c.owner)
                     }
 
+                    LogUtil.info("加载离线消息")
+                    LogUtil.info("离线消息 ${gson.toJson(res.data)}")
+
                     ChatListHelper.saveChats(
                         this@MainActivity,
                         res.data!!.toMutableList()
@@ -333,7 +372,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
                         ChatListHelper.loadNewestMsg(this@MainActivity, it)
                     }
                 }
-
+                // TODO 离线消息只加载一次 否则红点会重复出现
                 updateStatus()
             }
 
@@ -402,11 +441,61 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         username.text = UserStatusUtil.getUsername()
         useEmail.text = UserStatusUtil.getCurLoginUser()
 
-        LogUtil.info("头像路径 -> ${HttpUrl.IMG_URL + UserStatusUtil.getUserAvatar()}")
+        //LogUtil.info("头像路径 -> ${HttpUrl.IMG_URL + UserStatusUtil.getUserAvatar()}")
 
         Glide.with(this)
             .load(HttpUrl.IMG_URL + UserStatusUtil.getUserAvatar())
+            .placeholder(R.drawable.default_profile)
             .into(profile)
+
+        val changeProfile = header.findViewById<RoundedImageView>(R.id.changeProfile)
+
+        changeProfile.setOnClickListener {
+            SelectMediaHelper.selectMedia(this) {
+                val file = File(it[0].cutPath)
+                uploadProfile(file)
+            }
+        }
+    }
+
+    // 头像上传
+    private fun uploadProfile(
+        file: File,
+    ) {
+        val fileData = ApiServiceHelper.getRequestBodyPart(file, "image/*")
+        val userId = ApiServiceHelper.getRequestBody(UserStatusUtil.getUserId(), "text/plain")
+        val email = ApiServiceHelper.getRequestBody(UserStatusUtil.getCurLoginUser(), "text/plain")
+
+        ApiServiceHelper.service().uploadProfile(
+            fileData = fileData,
+            userId = userId,
+            email = email,
+        ).subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(object : MyObservable<ResBean<String>>() {
+                override fun success(res: ResBean<String>) {
+                    if (res.code == 200 && !res.data.isNullOrEmpty()) {
+                        MyToast(this@MainActivity).show("上传成功")
+                        UserStatusUtil.setUserAvatar(res.data!!)
+
+                        val header = dataBinding.navView.getHeaderView(0)
+                        val profile = header.findViewById<RoundedImageView>(R.id.drawer_profile)
+
+                        Glide.with(this@MainActivity)
+                            .load(HttpUrl.IMG_URL + UserStatusUtil.getUserAvatar())
+                            .placeholder(R.drawable.default_profile)
+                            .into(profile)
+                        return
+                    } else
+                        MyToast(this@MainActivity).show("上传失败")
+                }
+
+                override fun failed(e: Throwable) {
+                    Log.d(TAG, "failed: ", e)
+                    MyToast(this@MainActivity).show("上传失败")
+                }
+
+            })
     }
 
     // 确认 退出登录的操作
@@ -455,7 +544,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         // 如果 Fragment 已经添加并且显示中，则隐藏它
         if (mStack[position].isAdded && mStack[position].isVisible) {
             //manager.hide(mStack[position])
-            manager.detach(mStack[position])
+            manager.hide(mStack[position])
 
             dataBinding.chatUsersRecyclerview.apply {
                 visibility = View.VISIBLE
@@ -471,7 +560,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
                 manager.add(R.id.fragment_container, mStack[position], name)
             }
 
-            manager.attach(mStack[position])
+            manager.show(mStack[position])
             //manager.show(mStack[position])
             dataBinding.chatUsersRecyclerview.apply {
                 visibility = View.INVISIBLE
@@ -500,8 +589,11 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
             R.anim.bottom_slide_out,
         )
 
+        manager.hide(mStack[0])
+        dataBinding.imageFriendNotifyIcon.setImageResource(R.drawable.ic_msg)
+
         if (isShow && !mStack[1].isVisible) {
-            LogUtil.info("visible")
+            //LogUtil.info("visible")
             dataBinding.chatUsersRecyclerview.apply {
                 visibility = View.INVISIBLE
                 translationY = 0f
@@ -521,7 +613,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
                 manager.show(mStack[1])
             }
         } else if (!isShow) {
-            LogUtil.info("invisible")
+            //LogUtil.info("invisible")
             manager.hide(mStack[1])
 
             if (mStack[1].isVisible) {
@@ -616,6 +708,53 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
                 val inputMethodManager =
                     getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 inputMethodManager.hideSoftInputFromWindow(dataBinding.searchAction.windowToken, 0)
+            }
+        }
+    }
+
+    private var friendJob: Job? = null
+
+    private fun getFriendList() {
+        friendJob?.cancel()
+
+        friendJob = lifecycleScope.launch(Dispatchers.IO) {
+            while (isActive) {
+                ApiServiceHelper.service()
+                    .getUserFriend(UserStatusUtil.getCurLoginUser())
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(object : MyObservable<ResBean<List<UserFriBean>>>() {
+                        override fun success(res: ResBean<List<UserFriBean>>) {
+                            //Log.d("xht", "success: ${gson.toJson(res)}")
+                            val dataList = res.data
+                            if (!dataList.isNullOrEmpty()) {
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    UserFriendHelper.insertFriends(
+                                        this@MainActivity,
+                                        dataList.toMutableList()
+                                    )
+
+                                    for (friend in dataList) {
+                                        val temp = UserFriBean()
+                                        temp.email = friend.email
+                                        temp.avatar = friend.avatar
+                                        MainUserSelectHelper.insertProfile(
+                                            this@MainActivity,
+                                            temp
+                                        )
+                                    }
+
+                                    //updateStatus()
+                                }
+                            }
+                        }
+
+                        override fun failed(e: Throwable) {
+                            //loadLocalInfo()
+                        }
+                    })
+
+                delay(5000)
             }
         }
     }

@@ -1,7 +1,7 @@
 package com.example.mychatapp.fragments
 
+import android.annotation.SuppressLint
 import android.content.Intent
-import android.util.Log
 import android.view.View
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -9,7 +9,6 @@ import com.example.common.common.Constants
 import com.example.common.common.DataBindingConfig
 import com.example.common.ui.BaseActivity
 import com.example.common.ui.BaseFragment
-import com.example.common.util.LogUtil
 import com.example.common.util.UserStatusUtil
 import com.example.common.viewmodel.BaseViewModel
 import com.example.database.bean.ChatBean
@@ -17,10 +16,13 @@ import com.example.database.bean.UserFriBean
 import com.example.database.helper.ChatListHelper
 import com.example.database.helper.UserFriendHelper
 import com.example.mychatapp.R
+import com.example.mychatapp.activities.ApplicantActivity
 import com.example.mychatapp.activities.ChatActivity
+import com.example.mychatapp.activities.SearchChatActivity
 import com.example.mychatapp.adapter.search.SearchChatAdapter
 import com.example.mychatapp.adapter.search.SearchFriendAdapter
 import com.example.mychatapp.databinding.FragmentSearchBinding
+import com.example.mychatapp.listener.SearchListener
 import com.example.mychatapp.listener.UserListener
 import com.example.mychatapp.viewmodel.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +30,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class SearchFragment : BaseFragment<FragmentSearchBinding, BaseViewModel>() {
+class SearchFragment : BaseFragment<FragmentSearchBinding, BaseViewModel>(), SearchListener {
     private var chatList = mutableListOf<MutableList<ChatBean>>()
     private var chatAdapter: SearchChatAdapter? = null
     private var friendList = mutableListOf<UserFriBean>()
@@ -38,15 +40,30 @@ class SearchFragment : BaseFragment<FragmentSearchBinding, BaseViewModel>() {
     private var searchJob: Job? = null
 
 
+    @SuppressLint("SetTextI18n")
     override fun show() {
         // 观察 ViewModel 中 searchContent 的变化
         ViewModelProvider(requireActivity())[MainViewModel::class.java].searchContent.observe(
             viewLifecycleOwner
         ) { query ->
-            Log.d("xht", "搜索内容: $query")
+            dataBinding.searchMore.text = "$query..."
+            //Log.d("xht", "搜索内容: $query")
             if (!query.isNullOrEmpty())
                 updateSearchContent(query)
         }
+
+        dataBinding.searchMoreWrapper.setOnClickListener {
+            listener()
+        }
+    }
+
+
+    private fun listener() {
+        val value =
+            ViewModelProvider(requireActivity())[MainViewModel::class.java].searchContent.value
+        val intent = Intent(requireContext(), ApplicantActivity::class.java)
+        intent.putExtra("searchItem", value)
+        requireActivity().startActivity(intent)
     }
 
     override fun hide() {
@@ -64,7 +81,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding, BaseViewModel>() {
     }
 
     private fun updateSearchContent(searchContent: String) {
-        LogUtil.info(searchContent)
+        //LogUtil.info(searchContent)
         init()
         searchJob?.cancel()
         // 在主线程启动协程
@@ -196,7 +213,8 @@ class SearchFragment : BaseFragment<FragmentSearchBinding, BaseViewModel>() {
                 return@launch
             }
             // TODO 装载 adapter
-            chatAdapter = SearchChatAdapter(content, friends, chatList)
+            chatAdapter = SearchChatAdapter(content, friends, chatList, this@SearchFragment)
+
             dataBinding.searchChatRecycleView.adapter = chatAdapter
             dataBinding.searchChatWrapper.visibility = View.VISIBLE
         }
@@ -204,6 +222,29 @@ class SearchFragment : BaseFragment<FragmentSearchBinding, BaseViewModel>() {
 
     private fun clearSearchContent() {
         ViewModelProvider(requireActivity())[MainViewModel::class.java].searchContent.postValue("")
+    }
+
+    // 跳转 chat activity 或 更多
+    override fun jumpToActivity(
+        who: UserFriBean,
+        chats: MutableList<ChatBean>,
+        searchItem: String
+    ) {
+        val intent: Intent = if (chats.size == 1) {
+            Intent(requireContext(), ChatActivity::class.java).apply {
+                putExtra(Constants.CHAT_FRIEND, who)
+                putExtra(Constants.CHAT_START, chats[0])
+            }
+        } else {
+            Intent(requireContext(), SearchChatActivity::class.java).apply {
+                putExtra("who", who)
+                putExtra("searchItem", searchItem)
+                putExtra("chatList", ArrayList(chats)) // 将 MutableList 转为 ArrayList 传递
+            }
+        }
+        // 创建 Intent 并传递数据
+
+        startActivity(intent)
     }
 
 

@@ -19,4 +19,8 @@
     <string name="chat_history">CHAT HISTORY</string>
     <string name="group">GROUP</string>
     <string name="choose_user_chat">Please select a user to chat with</string>
+    <string name="apply_info">Application Information</string>
+    <string name="confirm">"Confirm "</string>
+    <string name="apply">Apply</string>
+    <string name="cancel">Cancel</string>
 </resources>

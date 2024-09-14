@@ -127,7 +127,6 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding, BaseViewModel>() {
 
         dataBinding.imageProfile.setOnClickListener {
             SelectMediaHelper.selectMedia(this, 1) {
-                it as ArrayList<LocalMedia>
                 val profile = it[0]
                 LogUtil.info(Gson().toJson(profile))
                 val uri = Uri.parse("file:///${profile.cutPath}")

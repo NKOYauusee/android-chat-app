@@ -19,7 +19,7 @@ object SelectMediaHelper {
     fun selectMedia(
         context: Context,
         maxSelectNum: Int = 1,
-        callback: (result: ArrayList<LocalMedia>?) -> Unit
+        callback: (result: ArrayList<LocalMedia>) -> Unit
     ) {
         PictureSelector.create(context)
             .openGallery(SelectMimeType.ofImage())

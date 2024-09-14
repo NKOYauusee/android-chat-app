@@ -4,6 +4,8 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.example.api.bean.HttpUrl
 import com.example.database.bean.UserFriBean
 import com.example.mychatapp.R
 import com.example.mychatapp.databinding.ItemSearchResBinding
@@ -32,6 +34,14 @@ class SearchFriendAdapter(
             return
 
         val friend = chatList[position]
+
+        holder.dataBinding.imageProfile
+
+        Glide.with(holder.itemView.context)
+            .load(HttpUrl.IMG_URL + friend.avatar)
+            .placeholder(R.drawable.image_placeholder)
+            .into(holder.dataBinding.imageProfile)
+
         holder.dataBinding.textName.text =
             bindHighlightedItem(friend.username!!, searchTerm) ?: friend.username
         holder.dataBinding.textContent.text =

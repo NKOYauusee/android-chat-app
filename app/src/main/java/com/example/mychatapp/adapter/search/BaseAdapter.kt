@@ -5,9 +5,12 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 
 interface BaseAdapter {
-    fun bindHighlightedItem(item: String, searchTerm: String): SpannableStringBuilder? {
-        val spanString = SpannableStringBuilder(item)
-        var start = item.indexOf(searchTerm)
+    fun bindHighlightedItem(fullText: String, searchTerm: String): SpannableStringBuilder? {
+        if(fullText.isEmpty() || searchTerm.isEmpty())
+            return null
+
+        val spanString = SpannableStringBuilder(fullText)
+        var start = fullText.indexOf(searchTerm)
 
         if (start < 0) {
             // 如果没有找到搜索词，返回null
@@ -26,7 +29,7 @@ interface BaseAdapter {
                 )
             }
             // 继续查找下一个匹配项
-            start = item.indexOf(searchTerm, end)
+            start = fullText.indexOf(searchTerm, end)
         } while (start >= 0)
 
         return spanString

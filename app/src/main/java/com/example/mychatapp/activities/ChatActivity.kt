@@ -19,6 +19,8 @@ import com.example.database.bean.ChatBean
 import com.example.database.bean.UserFriBean
 import com.example.database.enums.MessageType
 import com.example.database.helper.ChatListHelper
+import com.example.database.helper.MainUserSelectHelper
+import com.example.mychatapp.BR
 import com.example.mychatapp.R
 import com.example.mychatapp.adapter.ChatAdapter
 import com.example.mychatapp.databinding.ActivityChatBinding
@@ -26,6 +28,7 @@ import com.example.mychatapp.listener.ChatMsgListener
 import com.example.mychatapp.util.SelectMediaHelper
 import com.example.mychatapp.viewmodel.ChatViewModel
 import com.example.mychatapp.websocket.WebSocketManager
+import com.google.gson.Gson
 import com.luck.picture.lib.entity.LocalMedia
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -43,6 +46,7 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         loadReceiver()
+
         initListener()
         loadMsg()
         //ZoomMediaLoader.getInstance().init(ImagePreviewLoader())
@@ -54,7 +58,7 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
     }
 
     override fun getDataBindingConfig(): DataBindingConfig {
-        return DataBindingConfig(R.layout.activity_chat)
+        return DataBindingConfig(R.layout.activity_chat, BR.vm)
     }
 
     // 加载对方用户基本信息
@@ -63,7 +67,11 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
 
         //LogUtil.info("loadReceiver " + gson.toJson(curChatUser))
         viewModel.receiver.postValue(curChatUser)
+
         dataBinding.chatName.text = curChatUser?.username
+
+        val chat = intent.getSerializableExtra(Constants.CHAT_START) as? ChatBean
+        LogUtil.info("消息起始位置" + Gson().toJson(chat))
     }
 
     private fun initListener() {
@@ -84,8 +92,11 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
 
             lifecycleScope.launch(Dispatchers.IO) {
                 WebSocketManager.instance.sendMsg(generateChat(msg))
+//                MainUserSelectHelper.insertProfile(
+//                    this@ChatActivity,
+//                    viewModel.receiver.value!!
+//                )
             }
-
             dataBinding.inputMsg.setText("")
         }
 
@@ -96,7 +107,6 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
         dataBinding.selectMedia.setOnClickListener {
 
             SelectMediaHelper.selectMedia(this, 5) {
-                it as ArrayList<LocalMedia>
                 for (img in it) {
                     val file =
                         if (img.isCut && it.size == 1) File(img.cutPath) else File(img.realPath)
@@ -150,12 +160,18 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
         })
 
         //消息接收
-        WebSocketManager.instance.loadMsg(this) {
+        WebSocketManager.instance.receiveMessage(this) {
             lifecycleScope.launch(Dispatchers.Main) {
                 //viewModel.historyMsg.value?.add(chat)
                 chatListAdapter!!.addNewMsg(it) { i ->
                     dataBinding.chatRecycleView.scrollToPosition(i.size - 1)
                 }
+//                withContext(Dispatchers.IO) {
+//                    MainUserSelectHelper.insertProfile(
+//                        this@ChatActivity,
+//                        viewModel.receiver.value!!
+//                    )
+//                }
             }
         }
     }

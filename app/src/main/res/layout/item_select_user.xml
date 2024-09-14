@@ -89,5 +89,18 @@
             app:layout_constraintBottom_toTopOf="@id/viewSupporter"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <ImageView
+            android:id="@+id/msg_delete"
+            android:layout_width="@dimen/_24sdp"
+            android:layout_height="@dimen/_24sdp"
+            android:layout_marginEnd="@dimen/_7sdp"
+            android:background="@drawable/ic_delete"
+            android:padding="@dimen/_10sdp"
+            android:scaleType="centerCrop"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toTopOf="@id/textMsg"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textName" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -7,6 +7,7 @@ class Constants {
 
         //
         const val CHAT_FRIEND = "CHAT_FRIEND"
+        const val CHAT_START = "CHAT_START"
         const val CURRENT_USER = "CURRENT_USER"
         const val USERNAME = "USERNAME"
         const val USER_PHONE = "USER_PHONE"

@@ -6,21 +6,24 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.example.api.bean.HttpUrl
 import com.example.common.util.DateFormatUtil
 import com.example.database.bean.ChatBean
 import com.example.database.bean.UserFriBean
 import com.example.mychatapp.R
 import com.example.mychatapp.databinding.ItemSearchResBinding
+import com.example.mychatapp.listener.SearchListener
 
 class SearchChatAdapter(
     private val searchItem: String,
     private val friend: MutableList<UserFriBean>,
     private var chatList: MutableList<MutableList<ChatBean>>,
+    private var listener: SearchListener,
 ) :
     RecyclerView.Adapter<SearchChatAdapter.UserViewHolder>(), BaseAdapter {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
-//        ItemContainerUserBinding
         val inflate: ItemSearchResBinding = DataBindingUtil.inflate(
             LayoutInflater.from(parent.context),
             R.layout.item_search_res,
@@ -42,17 +45,27 @@ class SearchChatAdapter(
         val who = friend[position]
         val chats = chatList[position]
 
+        Glide.with(holder.itemView.context)
+            .load(HttpUrl.IMG_URL + who.avatar)
+            .placeholder(R.drawable.image_placeholder)
+            .into(holder.dataBinding.imageProfile)
 
         holder.dataBinding.textName.text = who.username!!
         if (chats.size == 1) {
             holder.dataBinding.textContent.text =
-                bindHighlightedItem(chats[0].message, searchItem)
+                bindHighlightedItem(chats[0].message, searchItem) ?: chats[0].message
 
             holder.dataBinding.textTime.text = DateFormatUtil.getFormatTime(chats[0].sendTime)
 
             holder.dataBinding.textTime.visibility = View.VISIBLE
         } else {
             holder.dataBinding.textContent.text = "${chats.size}条相关聊天记录"
+        }
+
+        // TODO
+        holder.itemView.setOnClickListener {
+            chats.reverse()
+            listener.jumpToActivity(who, chats, searchItem)
         }
     }
 

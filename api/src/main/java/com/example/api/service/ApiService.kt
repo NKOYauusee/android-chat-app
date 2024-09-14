@@ -75,16 +75,13 @@ interface ApiService {
     @FormUrlEncoded
     @POST("fri/delFriend")
     fun deleteFri(
-        @Field("email") email: String,
-        @Field("friend") friend: String
+        @Field("email") email: String, @Field("friend") friend: String
     ): Observable<ResBean<Nothing>>
 
     // 批量删除好友
-    @FormUrlEncoded
     @POST("fri/batchDelFriends")
     fun batchDeleteFri(
-        @Field("email") friendList: List<String>,
-        @Field("who") who: String
+        @Body friendList: List<UserFriBean>,
     ): Observable<ResBean<Nothing>>
 
     @POST("fri/setFriStatus")
@@ -103,7 +100,7 @@ interface ApiService {
     ): Observable<ResBean<String>>
 
 
-    // 注册带头像上传
+    // 注册 带头像上传
     @Multipart
     @POST("user/registerWithProfile")
     fun registerWithProfile(
@@ -114,4 +111,24 @@ interface ApiService {
         @Part("code") code: RequestBody
     ): Observable<ResBean<UserBean>>
 
+
+    // 头像上传
+    @Multipart
+    @POST("user/uploadProfile")
+    fun uploadProfile(
+        @Part fileData: MultipartBody.Part,
+        @Part("userId") userId: RequestBody,
+        @Part("email") email: RequestBody,
+    ): Observable<ResBean<String>>
+
+    // 搜索结果
+    @FormUrlEncoded
+    @POST("user/search")
+    fun searchRes(
+        @Field("searchContent") searchContent: String
+    ): Observable<ResBean<MutableList<UserBean>>>
+
+    // 好友申请
+    @POST("fri/addFriend")
+    fun addFriendApply(@Body apply: FriendApply): Observable<ResBean<Nothing>>
 }

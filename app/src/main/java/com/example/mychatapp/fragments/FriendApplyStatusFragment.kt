@@ -64,7 +64,7 @@ class FriendApplyStatusFragment :
         friendListJob?.cancel()
         friendApplyStatusList = object : MyObservable<ResBean<List<FriendApply>>>() {
             override fun success(res: ResBean<List<FriendApply>>) {
-                LogUtil.info("好友申请请求结果 ->" + Gson().toJson(res.data!!))
+                //LogUtil.info("好友申请请求结果 ->" + Gson().toJson(res.data!!))
                 viewModel.hasApplyData.postValue(!res.data.isNullOrEmpty())
 
                 //LogUtil.info(res.data!!.toMutableList().size.toString())

@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
+import com.example.api.bean.HttpUrl
 import com.example.common.util.DateFormatUtil
 import com.example.common.util.DensityUtils
 import com.example.common.util.UserStatusUtil
@@ -21,7 +22,7 @@ import com.makeramen.roundedimageview.RoundedImageView
 
 class ChatAdapter(
     private var chatBeanList: MutableList<ChatBean>,
-    private var receiverBitmap: String?,
+    private var receiverAvatar: String?,
     var listener: ChatMsgListener
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -58,7 +59,7 @@ class ChatAdapter(
     class ReceiverListener(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val msg: TextView = itemView.findViewById(R.id.textMessage)
         val dateTime: TextView = itemView.findViewById(R.id.textDateTime)
-        val profile: RoundedImageView? = itemView.findViewById(R.id.imageProfile)
+        val profile: RoundedImageView = itemView.findViewById(R.id.imageProfile)
         val imageView: ImageView = itemView.findViewById(R.id.message_img)
     }
 
@@ -94,7 +95,7 @@ class ChatAdapter(
         } else {
             holder as ReceiverListener
             //holder.setMsg(chatBeanList[position], receiverBitmap)
-            receiver(chatBeanList[position], holder, receiverBitmap)
+            receiver(chatBeanList[position], holder, receiverAvatar)
         }
     }
 
@@ -126,7 +127,7 @@ class ChatAdapter(
                 holder.imageView.visibility = View.VISIBLE
 
                 holder.imageView.setOnClickListener {
-                    //TODO
+                    //TODO 图片预览
                     listener
                 }
             }
@@ -138,6 +139,10 @@ class ChatAdapter(
         holder.dateTime.text = DateFormatUtil.formatTime(chat.sendTime)
 
         // TODO 设置头像
+        Glide.with(holder.itemView.context)
+            .load(HttpUrl.IMG_URL + avatar)
+            .placeholder(R.drawable.default_profile)
+            .into(holder.profile)
 
         when (chat.type) {
             MessageType.TEXT.type -> {

@@ -7,7 +7,10 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.example.api.bean.HttpUrl
 import com.example.common.util.DateFormatUtil
+import com.example.common.util.LogUtil
 import com.example.database.bean.HasChatBean
 import com.example.mychatapp.R
 import com.example.mychatapp.listener.MainChatListener
@@ -26,7 +29,7 @@ class MainChatAdapter(
     ) {
         chatList.add(chatBean)
         notifyItemInserted(chatList.size - 1)
-        notifyItemChanged(chatList.size - 1, true)
+        //notifyItemChanged(chatList.size - 1, true)
         callback(chatList)
     }
 
@@ -38,7 +41,7 @@ class MainChatAdapter(
         chatList.clear() // 清空旧数据
         chatList.addAll(list) // 添加新数据
         notifyItemRangeInserted(oldSize, list.size) // 从旧数据的末尾开始插入新数据
-        notifyItemRangeChanged(oldSize, list.size, false)
+        //notifyItemRangeChanged(oldSize, list.size, false)
         callback(chatList)
     }
 
@@ -48,6 +51,8 @@ class MainChatAdapter(
         val msg: TextView = item.findViewById(R.id.textMsg)
         val time: TextView = item.findViewById(R.id.textTime)
         val dot: ImageView = item.findViewById(R.id.msgNotify)
+
+        val delete: ImageView = item.findViewById(R.id.msg_delete)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainChatViewHolder {
@@ -61,24 +66,8 @@ class MainChatAdapter(
         return chatList.size
     }
 
-    override fun onBindViewHolder(
-        holder: MainChatViewHolder,
-        position: Int,
-        payloads: MutableList<Any>
-    ) {
-        super.onBindViewHolder(holder, position, payloads)
-
-        updateHolder(holder, position)
-        if (payloads.isNotEmpty()) {
-            if (payloads[0] is Boolean && payloads[0] as Boolean || !chatList[position].isRead) {
-                holder.dot.visibility = View.VISIBLE
-            } else {
-                holder.dot.visibility = View.INVISIBLE
-            }
-        }
-    }
-
     override fun onBindViewHolder(holder: MainChatViewHolder, position: Int) {
+        //LogUtil.info("no payloads")
         updateHolder(holder, position)
     }
 
@@ -115,10 +104,14 @@ class MainChatAdapter(
 
     @SuppressLint("SetTextI18n")
     private fun updateHolder(holder: MainChatViewHolder, position: Int) {
-        //holder.avatar
+        //LogUtil.info("$position -> ${HttpUrl.IMG_URL + chatList[position].avatar}")
+        Glide.with(holder.itemView.context)
+            .load(HttpUrl.IMG_URL + chatList[position].avatar)
+            .placeholder(R.drawable.default_profile)
+            .into(holder.avatar)
+
         holder.nickName.text = chatList[position].nickname
         holder.msg.text = chatList[position].newMsg
-
         holder.time.text = DateFormatUtil.getFormatTime(chatList[position].sendTime!!)
 
         if (!chatList[position].isRead) {
@@ -128,14 +121,38 @@ class MainChatAdapter(
         }
 
         holder.itemView.setOnClickListener {
+            if (holder.delete.visibility == View.VISIBLE) {
+                holder.delete.visibility = View.INVISIBLE
+                holder.time.visibility = View.VISIBLE
+                return@setOnClickListener
+            }
+
             holder.dot.visibility = View.INVISIBLE
             chatList[position].isRead = true
-
             listen.onClicked(chatList[position])
+        }
+
+        holder.itemView.setOnLongClickListener {
+            holder.time.visibility = View.INVISIBLE
+            holder.delete.visibility = View.VISIBLE
+            true
+        }
+
+        holder.delete.setOnClickListener {
+            LogUtil.info("删除")
+            listen.deleteMsg(chatList[position]) {
+                removeCallback(position)
+            }
         }
     }
 
     fun isEmpty(): Boolean {
         return chatList.isEmpty()
+    }
+
+    private fun removeCallback(position: Int) {
+        chatList.removeAt(position)
+        // 通知Adapter更新UI
+        notifyItemRemoved(position)
     }
 }

@@ -1,11 +1,13 @@
 package com.example.database.helper
 
 import android.content.Context
+import com.example.common.util.LogUtil
 import com.example.common.util.UserStatusUtil
 import com.example.database.UserDatabase
 import com.example.database.bean.ChatBean
 import com.example.database.bean.HasChatBean
 import com.example.database.bean.MessageType
+import com.example.database.bean.UserFriBean
 
 object MainUserSelectHelper {
     fun load(context: Context, user: String): MutableList<HasChatBean> {
@@ -26,13 +28,13 @@ object MainUserSelectHelper {
     }
 
     fun updateMsgAndTime(context: Context, msg: String, date: Long, email: String) {
-        UserDatabase.getInstance(context).getMainChatDao().update(msg, date, email)
+        UserDatabase.getInstance(context).getMainChatDao()
+            .update(UserStatusUtil.getCurLoginUser(), msg, date, email)
     }
 
     fun updateMainUser(
         context: Context,
         chatBean: ChatBean
-
     ) {
         val hasChatBean = HasChatBean()
 
@@ -45,10 +47,24 @@ object MainUserSelectHelper {
             if (chatBean.sender == hasChatBean.user) chatBean.receiver else chatBean.sender
         hasChatBean.nickname =
             if (chatBean.sender == hasChatBean.user) chatBean.receiverName else chatBean.senderName
-        // TODO 头像根据 email
-        hasChatBean.avatar = hasChatBean.email
+
         hasChatBean.isRead = chatBean.sender == UserStatusUtil.getCurLoginUser()
-        //LogUtil.info("待插入 -> ${gson.toJson(hasChatBean)}")
+
+        hasChatBean.avatar = UserFriendHelper.selectFriendAvatar(
+            context,
+            UserStatusUtil.getCurLoginUser(),
+            hasChatBean.email
+        )
+
+        LogUtil.info("待插入 -> ${hasChatBean.isRead}")
         insert(context, hasChatBean)
     }
+
+    fun insertProfile(context: Context, friend: UserFriBean) {
+        friend.avatar?.let {
+            UserDatabase.getInstance(context).getMainChatDao()
+                .insertProfile(UserStatusUtil.getCurLoginUser(), friend.email, it)
+        }
+    }
+
 }

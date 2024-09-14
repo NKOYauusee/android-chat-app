@@ -5,6 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.example.api.bean.HttpUrl
 import com.example.common.util.LogUtil
 import com.example.common.util.UserStatusUtil
 import com.example.database.bean.UserFriBean
@@ -35,6 +37,13 @@ class UserFriendListAdapter(
 
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
         val friend = friendList[position]
+        Glide.with(holder.itemView.context)
+            .load(HttpUrl.IMG_URL + friend.avatar)
+            .placeholder(R.drawable.default_profile)
+            .into(holder.dataBinding.imageProfile)
+
+        LogUtil.info("头像 ${HttpUrl.IMG_URL + friend.avatar}")
+
         holder.dataBinding.textName.text = friend.username
         holder.dataBinding.textEmail.text = friend.email
 
@@ -82,6 +91,17 @@ class UserFriendListAdapter(
         friendList.removeAt(position)
         // 通知Adapter更新UI
         notifyItemRemoved(position)
-        notifyItemRangeChanged(position, friendList.size)
+        //notifyItemRangeChanged(position, friendList.size)
+    }
+
+    fun getEmailFromPos(position: Int): UserFriBean {
+        return friendList[position]
+    }
+
+    fun batchRemove(list: MutableList<Int>) {
+        for (i in list) {
+            friendList.removeAt(i)
+            notifyItemRemoved(i)
+        }
     }
 }

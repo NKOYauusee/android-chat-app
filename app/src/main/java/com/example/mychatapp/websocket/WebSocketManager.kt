@@ -50,7 +50,7 @@ class WebSocketManager {
         websocketClient?.sendMsg(chatBean)
     }
 
-    fun loadMsg(context: Context, callback: (chatBean: ChatBean) -> Unit) {
+    fun receiveMessage(context: Context, callback: (chatBean: ChatBean) -> Unit) {
         websocketClient?.loadMsg = {
             val chat = gson.fromJson(it, ChatBean::class.java)
             chat.owner = UserStatusUtil.getCurLoginUser()

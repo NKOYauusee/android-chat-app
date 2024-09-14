@@ -2,10 +2,11 @@ package com.example.database.bean
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import java.io.Serializable
 
 
 @Entity("user_chat_table", primaryKeys = ["send_time", "message", "owner", "receiver", "sender"])
-class ChatBean {
+class ChatBean : Serializable {
     @ColumnInfo("receiver")
     var receiver: String = ""
 
