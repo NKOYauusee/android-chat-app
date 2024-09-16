@@ -6,12 +6,16 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.common.util.DateFormatUtil
+import com.example.common.util.LogUtil
 import com.example.common.util.UserStatusUtil
 import com.example.database.bean.FriendApply
-import com.example.mychatapp.R
 import com.example.database.enums.ApplyStatusEnum
+import com.example.mychatapp.R
 import com.example.mychatapp.listener.FriendApplyStatusListener
+import com.example.mychatapp.util.HttpHelper
+import com.google.gson.Gson
 import com.makeramen.roundedimageview.RoundedImageView
 
 class FriendApplyStatusAdapter(
@@ -45,6 +49,20 @@ class FriendApplyStatusAdapter(
         val applyInfo = applyList[position]
 
         holder.time.text = DateFormatUtil.formatTime(applyInfo.time)
+        LogUtil.info("applicant ${Gson().toJson(applyInfo)}")
+        if (applyInfo.target == UserStatusUtil.getCurLoginUser()) {
+            Glide.with(holder.itemView.context)
+                .load(HttpHelper.getFileUrl(applyInfo.applicantAvatar))
+                .placeholder(R.drawable.default_profile)
+                .into(holder.profile)
+        } else {
+            Glide.with(holder.itemView.context)
+                .load(HttpHelper.getFileUrl(applyInfo.targetAvatar))
+                .placeholder(R.drawable.default_profile)
+                .into(holder.profile)
+        }
+
+
 
         if (applyInfo.info.isNullOrEmpty()) {
             holder.wrapper.visibility = View.INVISIBLE

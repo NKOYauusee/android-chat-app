@@ -5,15 +5,14 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.api.bean.HttpUrl
 import com.example.common.util.DateFormatUtil
-import com.example.common.util.LogUtil
 import com.example.common.util.UserStatusUtil
 import com.example.database.bean.ChatBean
 import com.example.database.bean.UserFriBean
 import com.example.mychatapp.R
 import com.example.mychatapp.databinding.ItemSelectUserBinding
 import com.example.mychatapp.listener.SearchChatListener
+import com.example.mychatapp.util.HttpHelper
 
 class ChatListSearchAdapter(
     private val searchItem: String,
@@ -44,18 +43,18 @@ class ChatListSearchAdapter(
 
         if (friend.email == chat.sender) {
             Glide.with(holder.itemView.context)
-                .load(HttpUrl.IMG_URL + friend.avatar)
+                .load(HttpHelper.getFileUrl(friend.avatar))
                 .into(dataBinding.imageProfile)
         } else {
             Glide.with(holder.itemView.context)
-                .load(HttpUrl.IMG_URL + UserStatusUtil.getUserAvatar())
+                .load(HttpHelper.getFileUrl(UserStatusUtil.getUserAvatar()))
                 .into(dataBinding.imageProfile)
         }
 
 //        dataBinding.textName.text =
 //            if (friend.email == chat.sender) friend.username else chat.receiverName
 
-        LogUtil.info("nko -> $searchItem")
+        //LogUtil.info("搜索项 -> $searchItem")
         dataBinding.textMsg.text = bindHighlightedItem(chat.message, searchItem) ?: chat.message
 
         dataBinding.textTime.text = DateFormatUtil.getFormatTime(chat.sendTime)

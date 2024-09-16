@@ -1,12 +1,17 @@
 package com.example.mychatapp.activities
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ImageView
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.api.bean.HttpUrl
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.example.api.bean.MyObservable
 import com.example.api.bean.ResBean
 import com.example.api.helper.ApiServiceHelper
@@ -14,28 +19,36 @@ import com.example.common.common.Constants
 import com.example.common.common.DataBindingConfig
 import com.example.common.ui.BaseActivity
 import com.example.common.util.LogUtil
+import com.example.common.util.ToastUtil
 import com.example.common.util.UserStatusUtil
 import com.example.database.bean.ChatBean
 import com.example.database.bean.UserFriBean
 import com.example.database.enums.MessageType
 import com.example.database.helper.ChatListHelper
-import com.example.database.helper.MainUserSelectHelper
 import com.example.mychatapp.BR
 import com.example.mychatapp.R
 import com.example.mychatapp.adapter.ChatAdapter
+import com.example.mychatapp.components.MyToast
 import com.example.mychatapp.databinding.ActivityChatBinding
 import com.example.mychatapp.listener.ChatMsgListener
+import com.example.mychatapp.util.ChatHelper
+import com.example.mychatapp.util.FileDownloadHelper
+import com.example.mychatapp.util.FileUploadWorker
 import com.example.mychatapp.util.SelectMediaHelper
 import com.example.mychatapp.viewmodel.ChatViewModel
 import com.example.mychatapp.websocket.WebSocketManager
+import com.flyjingfish.openimagelib.OpenImage
 import com.google.gson.Gson
 import com.luck.picture.lib.entity.LocalMedia
+import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.rosuh.filepicker.config.FilePickerManager
 import java.io.File
 
 
@@ -69,9 +82,6 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
         viewModel.receiver.postValue(curChatUser)
 
         dataBinding.chatName.text = curChatUser?.username
-
-        val chat = intent.getSerializableExtra(Constants.CHAT_START) as? ChatBean
-        LogUtil.info("消息起始位置" + Gson().toJson(chat))
     }
 
     private fun initListener() {
@@ -91,7 +101,16 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
 
 
             lifecycleScope.launch(Dispatchers.IO) {
-                WebSocketManager.instance.sendMsg(generateChat(msg))
+                val chat: ChatBean = ChatHelper.generateChat(
+                    viewModel.receiver.value?.email!!, viewModel.receiver.value?.username!!, msg
+                )
+
+
+                WebSocketManager.instance.sendMsg(chat) {
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        MyToast(this@ChatActivity).show("发送失败，请检查网络设置！")
+                    }
+                }
 //                MainUserSelectHelper.insertProfile(
 //                    this@ChatActivity,
 //                    viewModel.receiver.value!!
@@ -103,25 +122,53 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
         dataBinding.layoutMore.setOnClickListener {
             changeMoreWrapperStyle()
         }
-
+        // 媒体选择
         dataBinding.selectMedia.setOnClickListener {
-
             SelectMediaHelper.selectMedia(this, 5) {
-                for (img in it) {
-                    val file =
-                        if (img.isCut && it.size == 1) File(img.cutPath) else File(img.realPath)
+                LogUtil.info(Gson().toJson(it))
+
+                for (selectFile in it) {
+                    val file = if (selectFile.isCut) File(selectFile.cutPath) else File(
+                        selectFile.realPath
+                    )
+
                     if (file.exists()) {
-                        uploadImg(file, img)
-                    } else {
-                        LogUtil.info("选择的文件不存在")
+                        if (selectFile.mimeType.contains("image/")) {
+                            if (file.length() < Constants.CHUNK_SIZE)
+                                uploadImg(file, selectFile)
+                            else {
+                                backgroundUploadFile(
+                                    viewModel.receiver.value?.email!!,
+                                    viewModel.receiver.value?.username!!,
+                                    file,
+                                    MessageType.IMAGE.type
+                                )
+                            }
+                        } else if (selectFile.mimeType.contains("video/")) {
+                            backgroundUploadFile(
+                                viewModel.receiver.value?.email!!,
+                                viewModel.receiver.value?.username!!,
+                                file,
+                                MessageType.VIDEO.type
+                            )
+                        } else {
+                            backgroundUploadFile(
+                                viewModel.receiver.value?.email!!,
+                                viewModel.receiver.value?.username!!,
+                                file,
+                                MessageType.FILE.type
+                            )
+                        }
                     }
                 }
             }
         }
 
-        //val mManager: LinearLayoutManager = LinearLayoutManager(mContext)
-        //mManager.stackFromEnd = true
-        //dataBinding.chatRecycleView.layoutManager = mManager
+        dataBinding.selectFile.setOnClickListener {
+            SelectMediaHelper.selectFile(this)
+        }
+
+
         dataBinding.chatRecycleView.addOnLayoutChangeListener { _, _, _, _, bottom, _, _, _, oldBottom ->
             if (bottom < oldBottom) {
                 lifecycleScope.launch(Dispatchers.Main) {
@@ -132,6 +179,56 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
                 }
             }
         }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            FilePickerManager.REQUEST_CODE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    val list = FilePickerManager.obtainData()
+                    LogUtil.info("文件选择 ${Gson().toJson(list)}")
+                    handleFile(list)
+                }
+            }
+        }
+    }
+
+    private fun handleFile(list: MutableList<String>) {
+        for (filePath in list) {
+            val file = File(filePath)
+            if (!file.exists()) continue
+            backgroundUploadFile(
+                viewModel.receiver.value?.email!!,
+                viewModel.receiver.value?.username!!,
+                file,
+                MessageType.FILE.type
+            )
+        }
+    }
+
+    private fun backgroundUploadFile(receiver: String, name: String, file: File, fileType: Int) {
+        val inputData = workDataOf(
+            "file_path" to file.absolutePath,
+            "file_type" to fileType,
+            "receiver" to receiver,
+            "name" to name
+        )
+
+        val uploadRequest =
+            OneTimeWorkRequestBuilder<FileUploadWorker>().setInputData(inputData).build()
+
+        WorkManager.getInstance(this@ChatActivity).enqueue(uploadRequest)
+
+        // 监听任务状态
+        WorkManager.getInstance(this).getWorkInfoByIdLiveData(uploadRequest.id)
+            .observe(this) { workInfo ->
+                if (workInfo != null && workInfo.state.isFinished) {
+                    val result = workInfo.outputData.getString("filePath")
+                    LogUtil.info("上传任务完成 res -> $result")
+                }
+            }
     }
 
     private fun listener() {
@@ -151,10 +248,10 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
                             ChatListHelper.loadHistory10Msg(this@ChatActivity, topChat)
                         }
                         //LogUtil.info("历史消息 -> ${Gson().toJson(list)}")
-                        chatListAdapter?.loadMore(list)
+                        chatListAdapter?.topLoadMore(list)
                     }
                 } else if (layoutManager.findLastVisibleItemPosition() == lastItemPos) {
-
+                    loadNewMsg()
                 }
             }
         })
@@ -176,6 +273,24 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
         }
     }
 
+    // 滚动到底部数 防抖处理
+    private var loadNewMsgJob: Job? = null
+    private fun loadNewMsg() {
+        if (loadNewMsgJob?.isActive == true) return
+
+        loadNewMsgJob = lifecycleScope.launch(Dispatchers.Main) {
+            val bottomChat = chatListAdapter?.returnBottomChat() ?: return@launch
+            val friend =
+                if (bottomChat.owner == bottomChat.sender) bottomChat.receiver else bottomChat.sender
+
+            val list = withContext(Dispatchers.IO) {
+                ChatListHelper.loadNewMsg(this@ChatActivity, friend, bottomChat.sendTime)
+            }
+            chatListAdapter?.bottomLoadMore(list)
+
+        }
+    }
+
     private fun uploadImg(file: File, data: LocalMedia) {
         //LogUtil.info("开始上传")
         val fileSize = ApiServiceHelper.getRequestBody(data.size, "text/plain")
@@ -186,23 +301,22 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
 
         LogUtil.info("文件类型: ${data.mimeType}")
 
-
         ApiServiceHelper.service().uploadFile(
-            fileData,
-            userId,
-            fileName,
-            fileType,
-            fileSize
-        ).subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+            fileData, userId, fileName, fileType, fileSize
+        ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
             .subscribe(object : MyObservable<ResBean<String>>() {
 
                 override fun success(res: ResBean<String>) {
                     //LogUtil.info(Gson().toJson(res))
                     // res.data -> 2/20240912/20240912_W7ZYt5OnmdCY.jpg
-                    WebSocketManager.instance.sendMsg(
-                        generateChat(HttpUrl.IMG_URL + res.data, MessageType.IMAGE.type)
+                    val chat: ChatBean = ChatHelper.generateChat(
+                        viewModel.receiver.value?.email!!,
+                        viewModel.receiver.value?.username!!,
+                        res.data!!,
+                        MessageType.IMAGE.type
                     )
+
+                    WebSocketManager.instance.sendMsg(chat)
                 }
 
                 override fun failed(e: Throwable) {
@@ -212,21 +326,36 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
     }
 
     //加载特定位置的起的10条数据 (默认最近10条消息)
-    private fun loadMsg(startIdx: Int = 0) {
+    private fun loadMsg() {
+        val chat = intent.getSerializableExtra(Constants.CHAT_START) as? ChatBean
+
+        //LogUtil.info("消息起始位置" + Gson().toJson(chat))
+        val startDate: Long = chat?.sendTime ?: 0
+        //LogUtil.info("消息起始位置" + Gson().toJson(startDate))
         lifecycleScope.launch(Dispatchers.Main) {
-            if (startIdx == 0) loadNewestMsg()
+            loadNewestMsg(startDate)
             //else loadMoreMsg(startIdx)
         }
     }
 
-    private suspend fun loadNewestMsg() {
+    private suspend fun loadNewestMsg(startDate: Long = 0) {
         var list = withContext(Dispatchers.IO) {
-            viewModel.receiver.value?.email?.let {
-                ChatListHelper.loadRecentMsg(
-                    this@ChatActivity, it
-                )
+            if (startDate == 0L) {
+                viewModel.receiver.value?.email?.let {
+                    ChatListHelper.loadRecentMsg(
+                        this@ChatActivity, it
+                    )
+                }
+            } else {
+                viewModel.receiver.value?.email?.let {
+                    ChatListHelper.loadSpecificMsg(
+                        this@ChatActivity, it, startDate
+                    )
+                }
             }
         }
+        //LogUtil.info(Gson().toJson(chatListAdapter?.returnTopChat()))
+        //LogUtil.info(Gson().toJson(list))
 
         loading(false)
 
@@ -238,10 +367,12 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
         chatListAdapter!!.setChatList(list) {
             dataBinding.chatRecycleView.scrollToPosition(it.size - 1)
         }
-        // 强制滚动到底部
-        delay(500)
-        chatListAdapter?.scrollToLastIdx {
-            dataBinding.chatRecycleView.scrollToPosition(it)
+        // TODO 强制滚动到底部
+        if (startDate == 0L) {
+            delay(500)
+            chatListAdapter?.scrollToLastIdx {
+                dataBinding.chatRecycleView.scrollToPosition(it)
+            }
         }
     }
 
@@ -271,26 +402,54 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
         }
     }
 
-    //
-    private fun generateChat(msg: String, type: Int = 0): ChatBean {
-        val chatBean = ChatBean()
-        chatBean.receiver = viewModel.receiver.value?.email ?: ""
-        chatBean.receiverName = viewModel.receiver.value?.username
-
-        chatBean.sender = UserStatusUtil.getCurLoginUser()
-        chatBean.senderName = UserStatusUtil.getUsername()
-        //聊天记录所有者
-        chatBean.owner = UserStatusUtil.getCurLoginUser()
-        chatBean.type = type
-
-        val msgType = MessageType.getDescFromType(type)
-        if (msgType == null) chatBean.message = msg
-        else chatBean.message = "$msgType:$msg"
-
-        return chatBean
+    override fun videoPreview(videoPlayer: StandardGSYVideoPlayer, url: String) {
+//        videoPlayer.setUp(url, true, "")
+//        videoPlayer.backButton.visibility = View.VISIBLE
+//
+//        //getPath(chat.message, chat.msgType)?.let { it1 -> listener.videoPreView(it1) }
+//        videoPlayer.setIsTouchWiget(true)
+//        videoPlayer.backButton.setOnClickListener {
+//            videoPlayer.setVideoAllCallBack(null);
+//        }
+//
+//        videoPlayer.isNeedOrientationUtils = false
+//
+//        videoPlayer.startPlayLogic()
     }
 
-    override fun preview() {
 
+    override fun imagePreview(list: MutableList<ChatBean>, position: Int) {
+        OpenImage.with(this).setClickRecyclerView(
+            dataBinding.chatRecycleView
+        ) { _, _ ->
+            R.id.message_img
+        } //点击的ImageView的ScaleType类型（如果设置不对，打开的动画效果将是错误的）
+            .setSrcImageViewScaleType(ImageView.ScaleType.CENTER_CROP, true)
+            //RecyclerView的数据
+            .setImageUrlList(list)
+            //点击的ImageView所在数据的位置
+            .setClickPosition(position).show()
+    }
+
+    // TODO 下载文件
+    override fun download(chat: ChatBean, callback: () -> Unit) {
+        MyToast(this).show("开始下载")
+        lifecycleScope.launch(Dispatchers.IO) {
+            ChatHelper.getPath(chat.message, chat.msgType)?.let {
+                LogUtil.info("视频下载地址 $it")
+                val fileName = "file_" + chat.message.substringAfterLast("/")
+                val downloader = FileDownloadHelper(it, fileName)
+                downloader.download()
+
+                withContext(Dispatchers.Main) {
+                    ToastUtil.showToastMsg(
+                        "${downloader.getFileDownLoadPath()} 下载完成", this@ChatActivity
+                    )
+                    callback()
+                }
+                //val size = FileDownloadHelper(it, fileName).getContentLength()
+                //LogUtil.info("$size")
+            }
+        }
     }
 }

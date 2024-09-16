@@ -6,13 +6,13 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.api.bean.HttpUrl
 import com.example.common.util.LogUtil
 import com.example.common.util.UserStatusUtil
 import com.example.database.bean.UserFriBean
 import com.example.mychatapp.R
 import com.example.mychatapp.databinding.ItemContainerUserBinding
 import com.example.mychatapp.listener.UserListener
+import com.example.mychatapp.util.HttpHelper
 
 class UserFriendListAdapter(
     private var friendList: MutableList<UserFriBean>,
@@ -38,11 +38,11 @@ class UserFriendListAdapter(
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
         val friend = friendList[position]
         Glide.with(holder.itemView.context)
-            .load(HttpUrl.IMG_URL + friend.avatar)
+            .load(HttpHelper.getFileUrl(friend.avatar))
             .placeholder(R.drawable.default_profile)
             .into(holder.dataBinding.imageProfile)
 
-        LogUtil.info("头像 ${HttpUrl.IMG_URL + friend.avatar}")
+        //LogUtil.info("头像 ${HttpUrl.IMG_URL + friend.avatar}")
 
         holder.dataBinding.textName.text = friend.username
         holder.dataBinding.textEmail.text = friend.email

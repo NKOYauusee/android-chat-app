@@ -6,12 +6,12 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.api.bean.HttpUrl
 import com.example.common.util.UserStatusUtil
 import com.example.database.bean.UserBean
 import com.example.mychatapp.R
 import com.example.mychatapp.databinding.ItemApplicantBinding
 import com.example.mychatapp.listener.ApplyListener
+import com.example.mychatapp.util.HttpHelper
 
 class SearchResultAdapter(
     private val searchItem: String,
@@ -45,7 +45,7 @@ class SearchResultAdapter(
         val email = user.email
         when (email) {
             (UserStatusUtil.getCurLoginUser()) -> {
-                //dataBinding.btnSendApply.visibility = View.INVISIBLE
+                dataBinding.btnSendApply.visibility = View.INVISIBLE
             }
 
             // TODO 判断是否为已添加的好友
@@ -58,7 +58,7 @@ class SearchResultAdapter(
         dataBinding.imageProfile
 
         Glide.with(holder.itemView.context)
-            .load(HttpUrl.IMG_URL + user.avatar)
+            .load(HttpHelper.getFileUrl(user.avatar))
             .placeholder(R.drawable.default_profile)
             .into(dataBinding.imageProfile)
 
@@ -86,5 +86,23 @@ class SearchResultAdapter(
                 dataBinding.btnSendApply.text = "已申请"
             }
         }
+    }
+
+    fun getPage(): String {
+        return ((this.userList.size / 10) + 1).toString()
+    }
+
+    fun loadMore(res: MutableList<UserBean>) {
+        if (userList.contains(res[0]))
+            return
+
+        val start = userList.size
+        userList.addAll(res)
+        // 通知适配器从特定位置插入了一系列项目
+        notifyItemRangeInserted(start, res.size)
+    }
+
+    fun hasMoreRes(): Boolean {
+        return this.userList.size % 10 == 0
     }
 }

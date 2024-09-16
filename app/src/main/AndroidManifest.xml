@@ -49,6 +49,9 @@
         android:theme="@style/Theme.MyChatApp"
         tools:targetApi="31">
         <activity
+            android:name=".activities.SettingActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.ApplicantActivity"
             android:exported="false" />
         <activity
@@ -60,6 +63,8 @@
         <activity
             android:name=".activities.ChatActivity"
             android:exported="false"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activities.SignUpActivity"

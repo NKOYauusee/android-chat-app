@@ -8,8 +8,14 @@ class FriendApply {
     @ColumnInfo("target")
     var target: String = ""
 
+    @ColumnInfo("targetAvatar")
+    var targetAvatar: String = ""
+
     @ColumnInfo("applicant")
     var applicant: String = ""
+
+    @ColumnInfo("applicantAvatar")
+    var applicantAvatar: String = ""
 
     @ColumnInfo("applicantName")
     var applicantName: String? = null

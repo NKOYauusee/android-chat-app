@@ -1,5 +1,11 @@
 package com.example.mychatapp.listener
 
+import com.example.database.bean.ChatBean
+import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer
+
 interface ChatMsgListener {
-    fun preview()
+    // 点击预览
+    fun videoPreview(videoPlayer: StandardGSYVideoPlayer, url: String)
+    fun imagePreview(list: MutableList<ChatBean>, position: Int)
+    fun download(chat: ChatBean, callback: () -> Unit)
 }

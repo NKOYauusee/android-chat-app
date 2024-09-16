@@ -1,56 +1,142 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/_8sdp"
-    android:padding="@dimen/_4sdp">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <FrameLayout
-        android:id="@+id/message_wrapper"
-        android:layout_width="wrap_content"
+    <data>
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/background_sent_msg"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.8">
+        android:layout_marginTop="@dimen/_8sdp"
+        android:padding="@dimen/_4sdp">
+
+        <FrameLayout
+            android:id="@+id/message_wrapper"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_sent_msg"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.8">
+
+            <TextView
+                android:id="@+id/textMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="@dimen/_12sdp"
+                android:paddingTop="@dimen/_8sdp"
+                android:paddingEnd="@dimen/_12sdp"
+                android:paddingBottom="@dimen/_8sdp"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_13ssp"
+                app:layout_constraintWidth_max="wrap" />
+
+            <FrameLayout
+                android:id="@+id/video_wrapper"
+                android:layout_width="@dimen/_165sdp"
+                android:layout_height="@dimen/_95sdp"
+                android:layout_margin="@dimen/_5sdp"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+
+                <com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer
+                    android:id="@+id/video_player"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center" />
+
+                <ImageView
+                    android:id="@+id/message_video"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="@dimen/_30sdp"
+                    android:minHeight="@dimen/_30sdp"
+                    android:padding="@dimen/_5sdp"
+                    android:scaleType="centerCrop"
+                    android:visibility="visible" />
+
+                <!--                <androidx.appcompat.widget.AppCompatImageView-->
+                <!--                    android:id="@+id/img_back"-->
+                <!--                    android:layout_width="@dimen/_30sdp"-->
+                <!--                    android:layout_height="@dimen/_30sdp"-->
+                <!--                    android:layout_gravity="center"-->
+                <!--                    android:background="#55000000"-->
+                <!--                    android:padding="@dimen/_6sdp"-->
+                <!--                    android:src="@drawable/ic_continue"-->
+                <!--                    app:tint="@color/white" />-->
+            </FrameLayout>
+
+            <ImageView
+                android:id="@+id/message_img"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="@dimen/_30sdp"
+                android:minHeight="@dimen/_30sdp"
+                android:padding="@dimen/_5sdp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/image_placeholder"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/file_wrapper"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/message_file_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="@dimen/_10sdp"
+                    android:gravity="center"
+                    android:src="@drawable/ic_file"
+                    android:text="abcaca"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:visibility="visible"
+                    app:tint="@color/white" />
+
+                <ImageView
+                    android:id="@+id/message_file"
+                    android:layout_width="@dimen/_30sdp"
+                    android:layout_height="@dimen/_30sdp"
+                    android:layout_margin="@dimen/_5sdp"
+                    android:padding="@dimen/_5sdp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_file"
+                    android:visibility="visible"
+                    app:tint="@color/white" />
+            </LinearLayout>
+
+        </FrameLayout>
+
+        <com.makeramen.roundedimageview.RoundedImageView
+            android:id="@+id/btn_download"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/_5sdp"
+            android:padding="@dimen/_5sdp"
+            android:src="@drawable/ic_download"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="@id/message_wrapper"
+            app:layout_constraintEnd_toStartOf="@id/message_wrapper"
+            app:layout_constraintTop_toTopOf="@id/message_wrapper" />
 
         <TextView
-            android:id="@+id/textMessage"
-            android:layout_width="wrap_content"
+            android:id="@+id/textDateTime"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingStart="@dimen/_12sdp"
-            android:paddingTop="@dimen/_8sdp"
-            android:paddingEnd="@dimen/_12sdp"
-            android:paddingBottom="@dimen/_8sdp"
-            android:text="askdhlahflafh"
-            android:textColor="@color/white"
-            android:textSize="@dimen/_13ssp"
-            android:visibility="gone"
-            app:layout_constraintWidth_max="wrap" />
+            android:layout_marginTop="@dimen/_4sdp"
+            android:text="11:11"
+            android:textColor="@color/secondary_text"
+            android:textSize="@dimen/_8ssp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/message_wrapper" />
 
-        <ImageView
-            android:id="@+id/message_img"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="@dimen/_30sdp"
-            android:minHeight="@dimen/_30sdp"
-            android:padding="@dimen/_5sdp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/image_placeholder"
-            android:visibility="visible" />
-    </FrameLayout>
-
-
-    <TextView
-        android:id="@+id/textDateTime"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_4sdp"
-        android:text="11:11"
-        android:textColor="@color/secondary_text"
-        android:textSize="@dimen/_8ssp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/message_wrapper" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

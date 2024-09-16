@@ -20,7 +20,6 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import com.example.api.bean.HttpUrl
 import com.example.api.bean.MyObservable
 import com.example.api.bean.ResBean
 import com.example.api.helper.ApiServiceHelper
@@ -47,6 +46,7 @@ import com.example.mychatapp.databinding.ActivityMainBinding
 import com.example.mychatapp.fragments.FriendApplyStatusFragment
 import com.example.mychatapp.fragments.SearchFragment
 import com.example.mychatapp.listener.MainChatListener
+import com.example.mychatapp.util.HttpHelper
 import com.example.mychatapp.util.SelectMediaHelper
 import com.example.mychatapp.util.UserUtil
 import com.example.mychatapp.viewmodel.MainViewModel
@@ -67,7 +67,10 @@ import java.util.Stack
 class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainChatListener {
     private val gson = Gson()
 
+    //
     private val mStack = Stack<BaseFragment<*, *>>()
+
+    private var searchIsClicked = false
 
     // 已发起聊天的用户
     private var chatList = MainChatAdapter(mutableListOf(), this)
@@ -78,9 +81,9 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
     // 轮询请求 好友处理的状态
     private var friendApplyJob: Job? = null
 
+
     // 请求结果回调
     private var friendApplyRes: MyObservable<ResBean<Int>>? = null
-
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,8 +103,12 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         initListener()
 
         setProfileContent()
-        WebSocketManager.instance.connect(HttpUrl.WS_URL, UserStatusUtil.getLoginToken())
-        loadUnReceiveMsg()
+        //
+        WebSocketManager.instance.connect(
+            HttpHelper.getWebsocketUrl(),
+            UserStatusUtil.getLoginToken()
+        )
+        reqOfflineMsg()
     }
 
     override fun onResume() {
@@ -109,7 +116,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         loadUser()
         getFriendList()
         initFriendApplyRes()
-
         updateStatus()
     }
 
@@ -307,6 +313,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
     }
 
     private var dialog: Dialog? = null
+
     override fun deleteMsg(target: HasChatBean, callback: () -> Unit) {
         dialog?.dismiss()
         dialog = AlertDialog.Builder(this)
@@ -346,8 +353,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         return super.onKeyDown(keyCode, event)
     }
 
-    //接受离线消息
-    private fun loadUnReceiveMsg() {
+    // 接收离线时未收到的消息
+    private fun reqOfflineMsg() {
         offlineMsg = object : MyObservable<ResBean<List<ChatBean>>>() {
             override fun success(res: ResBean<List<ChatBean>>) {
                 if (res.data.isNullOrEmpty())
@@ -367,7 +374,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
                         this@MainActivity,
                         res.data!!.toMutableList()
                     )
-
+                    // 更新最新消息
                     set.forEach {
                         ChatListHelper.loadNewestMsg(this@MainActivity, it)
                     }
@@ -392,6 +399,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
 
     // 好友处理结果回调
     private fun initFriendApplyRes() {
+        LogUtil.info("好友处理 轮询请求开始")
         friendApplyRes = object : MyObservable<ResBean<Int>>() {
             override fun success(res: ResBean<Int>) {
                 //Log.d("xht", "success: ${gson.toJson(res)}")
@@ -407,6 +415,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
 
             override fun failed(e: Throwable) {
                 Log.e("xht", "failed req friend apply status", e)
+                friendApplyJob?.cancel()
             }
         }
 
@@ -444,7 +453,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         //LogUtil.info("头像路径 -> ${HttpUrl.IMG_URL + UserStatusUtil.getUserAvatar()}")
 
         Glide.with(this)
-            .load(HttpUrl.IMG_URL + UserStatusUtil.getUserAvatar())
+            .load(HttpHelper.getFileUrl(UserStatusUtil.getUserAvatar()))
             .placeholder(R.drawable.default_profile)
             .into(profile)
 
@@ -482,7 +491,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
                         val profile = header.findViewById<RoundedImageView>(R.id.drawer_profile)
 
                         Glide.with(this@MainActivity)
-                            .load(HttpUrl.IMG_URL + UserStatusUtil.getUserAvatar())
+                            .load(HttpHelper.getFileUrl(UserStatusUtil.getUserAvatar()))
                             .placeholder(R.drawable.default_profile)
                             .into(profile)
                         return
@@ -497,6 +506,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
 
             })
     }
+
 
     // 确认 退出登录的操作
     override fun onPositiveButtonClick() {
@@ -516,7 +526,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
             R.anim.exit_animation, true
         )
     }
-
 
     private fun initFragment() {
         // 0 好友申请处理页
@@ -674,7 +683,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         return isBack
     }
 
-    private var searchIsClicked = false
     private fun prepareToSearch() {
         searchIsClicked = !searchIsClicked
         viewModel.searchIsClicked.postValue(searchIsClicked)
@@ -692,6 +700,10 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
                 imm.showSoftInput(dataBinding.searchAction, InputMethodManager.SHOW_IMPLICIT)
             }
 
+            if (dataBinding.searchAction.text.isNotEmpty()) {
+                showSearchFragment(true)
+                viewModel.searchContent.postValue(dataBinding.searchAction.text.toString())
+            }
             // TODO
         } else {
             dataBinding.imageSearch.setImageResource(R.drawable.ic_search)

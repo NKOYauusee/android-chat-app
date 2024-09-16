@@ -45,9 +45,13 @@ class WebSocketManager {
         }
     }
 
-    fun sendMsg(chatBean: ChatBean) {
+    fun sendMsg(chatBean: ChatBean, callback: () -> Unit = {}) {
         LogUtil.info("send-> " + gson.toJson(chatBean))
-        websocketClient?.sendMsg(chatBean)
+        try {
+            websocketClient?.sendMsg(chatBean)
+        } catch (_: Exception) {
+            callback()
+        }
     }
 
     fun receiveMessage(context: Context, callback: (chatBean: ChatBean) -> Unit) {

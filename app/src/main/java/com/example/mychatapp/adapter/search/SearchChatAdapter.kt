@@ -7,13 +7,13 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.api.bean.HttpUrl
 import com.example.common.util.DateFormatUtil
 import com.example.database.bean.ChatBean
 import com.example.database.bean.UserFriBean
 import com.example.mychatapp.R
 import com.example.mychatapp.databinding.ItemSearchResBinding
 import com.example.mychatapp.listener.SearchListener
+import com.example.mychatapp.util.HttpHelper
 
 class SearchChatAdapter(
     private val searchItem: String,
@@ -46,7 +46,7 @@ class SearchChatAdapter(
         val chats = chatList[position]
 
         Glide.with(holder.itemView.context)
-            .load(HttpUrl.IMG_URL + who.avatar)
+            .load(HttpHelper.getFileUrl(who.avatar))
             .placeholder(R.drawable.image_placeholder)
             .into(holder.dataBinding.imageProfile)
 

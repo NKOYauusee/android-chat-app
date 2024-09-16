@@ -9,6 +9,7 @@ import com.example.api.helper.ApiServiceHelper
 import com.example.common.common.DataBindingConfig
 import com.example.common.ui.BaseActivity
 import com.example.common.util.LogUtil
+import com.example.common.util.SettingUtil
 import com.example.common.util.UserStatusUtil
 import com.example.common.viewmodel.BaseViewModel
 import com.example.database.bean.UserBean
@@ -16,55 +17,34 @@ import com.example.mychatapp.MainActivity
 import com.example.mychatapp.R
 import com.example.mychatapp.components.MyToast
 import com.example.mychatapp.databinding.ActivitySignInBinding
+import com.example.mychatapp.util.HttpHelper
 import com.example.mychatapp.util.UserUtil.setLoginStatus
 import com.google.gson.Gson
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
 class SignInActivity : BaseActivity<ActivitySignInBinding, BaseViewModel>() {
-    private var loginRes: MyObservable<ResBean<UserBean>>? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //SpUtil.initMMKV(this)
+        // 初始化
+        initAppSetting()
+
         // 免登录操作
         verifyToken()
 
         init()
         initListener()
+
+        SettingUtil.initSystemUserSetting()
+    }
+
+    private fun initAppSetting() {
+        LogUtil.info(HttpHelper.getHttpBaseUrl())
+        ApiServiceHelper.initService(HttpHelper.getHttpBaseUrl())
     }
 
     private fun init() {
         // 请求结果回调
-        loginRes = object : MyObservable<ResBean<UserBean>>() {
-            override fun success(res: ResBean<UserBean>) {
-                if (res.code != 200 || res.data == null || res.data!!.token.isNullOrEmpty()) {
-                    loading(false)
-                    MyToast(mContext).show("登陆失败")
-                    LogUtil.error("登录失败 -> " + Gson().toJson(res))
-                    return
-                }
-
-                loading(false)
-                setLoginStatus(res.data!!, true)
-                //ToastUtil.showToastMsg("登录成功", mContext)
-                Log.d("xht", "login success> userBean: ${Gson().toJson(res.data)}")
-
-                switchActivity(
-                    this@SignInActivity,
-                    MainActivity::class.java,
-                    R.anim.enter_animation,
-                    R.anim.exit_animation,
-                    true
-                )
-            }
-
-            override fun failed(e: Throwable) {
-                Log.d("xht", "login failed")
-                MyToast(mContext).show("登陆失败")
-                loading(false)
-            }
-        }
     }
 
     private fun initListener() {
@@ -103,7 +83,37 @@ class SignInActivity : BaseActivity<ActivitySignInBinding, BaseViewModel>() {
 
     private fun login(email: String, pwd: String, code: String = "") {
         ApiServiceHelper.service().login(email, pwd, code).subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread()).subscribe(loginRes!!)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(object : MyObservable<ResBean<UserBean>>() {
+                override fun success(res: ResBean<UserBean>) {
+                    if (res.code != 200 || res.data == null || res.data!!.token.isNullOrEmpty()) {
+                        loading(false)
+                        MyToast(mContext).show("登陆失败")
+                        LogUtil.error("登录失败 -> " + Gson().toJson(res))
+                        return
+                    }
+
+                    loading(false)
+
+                    setLoginStatus(res.data!!, true)
+                    //ToastUtil.showToastMsg("登录成功", mContext)
+                    Log.d("xht", "登录成功: ${Gson().toJson(res.data)}")
+
+                    switchActivity(
+                        this@SignInActivity,
+                        MainActivity::class.java,
+                        R.anim.enter_animation,
+                        R.anim.exit_animation,
+                        true
+                    )
+                }
+
+                override fun failed(e: Throwable) {
+                    Log.d("xht", "login failed", e)
+                    MyToast(mContext).show("登陆失败")
+                    loading(false)
+                }
+            })
     }
 
     private fun loading(isLoading: Boolean = true) {

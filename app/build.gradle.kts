@@ -47,6 +47,8 @@ android {
 
 dependencies {
 
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -84,6 +86,12 @@ dependencies {
     implementation("io.github.lucksiege:pictureselector:v3.11.2")
     implementation("io.github.lucksiege:compress:v3.11.2")
     implementation("io.github.lucksiege:ucrop:v3.11.2")
+
+    implementation("me.rosuh:AndroidFilePicker:1.0.1")
+    // 图片预览
+    implementation("io.github.FlyJingFish.OpenImage:OpenImageFullLib:2.2.6")
+    implementation("com.github.CarGuo.GSYVideoPlayer:GSYVideoPlayer:v9.0.0-release-jitpack")
+
 
     //imagePreview 不适配androidx
     //implementation("com.ycjiang:ImagePreview:2.3.5")

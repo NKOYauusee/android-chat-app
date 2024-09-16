@@ -8,12 +8,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.api.bean.HttpUrl
 import com.example.common.util.DateFormatUtil
 import com.example.common.util.LogUtil
 import com.example.database.bean.HasChatBean
 import com.example.mychatapp.R
 import com.example.mychatapp.listener.MainChatListener
+import com.example.mychatapp.util.HttpHelper
 import com.makeramen.roundedimageview.RoundedImageView
 
 class MainChatAdapter(
@@ -106,7 +106,7 @@ class MainChatAdapter(
     private fun updateHolder(holder: MainChatViewHolder, position: Int) {
         //LogUtil.info("$position -> ${HttpUrl.IMG_URL + chatList[position].avatar}")
         Glide.with(holder.itemView.context)
-            .load(HttpUrl.IMG_URL + chatList[position].avatar)
+            .load(HttpHelper.getFileUrl(chatList[position].avatar))
             .placeholder(R.drawable.default_profile)
             .into(holder.avatar)
 

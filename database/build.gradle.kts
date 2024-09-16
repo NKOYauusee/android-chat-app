@@ -51,4 +51,6 @@ dependencies {
     kapt("androidx.room:room-compiler:2.6.1")
     // kotlin扩展和协同程序对Room的支持
     implementation("androidx.room:room-ktx:2.6.1")
+
+    implementation("io.github.FlyJingFish.OpenImage:OpenImageFullLib:2.2.6")
 }

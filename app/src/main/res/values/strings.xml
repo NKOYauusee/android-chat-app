@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">MyChatApp</string>
-    <string name="welcomeBack">欢迎回来</string>
+    <string name="welcome_back">欢迎回来</string>
     <string name="login_to_continue">登录</string>
     <string name="email">邮箱</string>
     <string name="password">密码</string>
@@ -22,4 +22,6 @@
     <string name="apply_info">申请信息</string>
     <string name="confirm">确定</string>
     <string name="cancel">取消</string>
+    <string name="server_address">服务器地址</string>
+    <string name="server_port">端口</string>
 </resources>

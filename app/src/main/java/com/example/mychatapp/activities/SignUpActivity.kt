@@ -12,6 +12,7 @@ import com.example.common.common.DataBindingConfig
 import com.example.common.ui.BaseActivity
 import com.example.common.util.BitmapUtil
 import com.example.common.util.LogUtil
+import com.example.common.util.SettingUtil
 import com.example.common.util.ToastUtil
 import com.example.common.viewmodel.BaseViewModel
 import com.example.database.bean.UserBean
@@ -20,10 +21,8 @@ import com.example.mychatapp.R
 import com.example.mychatapp.components.MyToast
 import com.example.mychatapp.databinding.ActivitySignUpBinding
 import com.example.mychatapp.util.SelectMediaHelper
-import com.example.mychatapp.util.SystemUtil
 import com.example.mychatapp.util.UserUtil
 import com.google.gson.Gson
-import com.luck.picture.lib.entity.LocalMedia
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.io.File
@@ -59,14 +58,6 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding, BaseViewModel>() {
                     UserUtil.setLoginStatus(it, true)
                 }
                 LogUtil.info("data -> ${Gson().toJson(res.data)}")
-                // TODO 跳转 主页 or 登录页
-
-//                switchActivity(
-//                    this@SignUpActivity,
-//                    SignInActivity::class.java,
-//                    R.anim.enter_animation,
-//                    R.anim.exit_animation, true
-//                )
 
                 switchActivity(
                     this@SignUpActivity,
@@ -84,6 +75,7 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding, BaseViewModel>() {
     }
 
     private fun initListener() {
+        // 返回登录页
         dataBinding.btJumpToLogin.setOnClickListener {
             switchActivity(
                 this,
@@ -136,7 +128,7 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding, BaseViewModel>() {
                     .load(uri)
                     .into(dataBinding.imageProfile)
 
-                SystemUtil.saveToSystemGallery(this, profile.cutPath)
+                SettingUtil.saveToSystemGallery(this, profile.cutPath)
             }
         }
 
@@ -170,7 +162,6 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding, BaseViewModel>() {
     override fun getDataBindingConfig(): DataBindingConfig {
         return DataBindingConfig(R.layout.activity_sign_up)
     }
-
 
     private fun savaToSystemPictures(filePath: String) {
         val bitmap: Bitmap = BitmapUtil.getBitmapFromLocalPath(filePath)

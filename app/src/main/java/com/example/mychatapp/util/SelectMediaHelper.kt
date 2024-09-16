@@ -1,5 +1,6 @@
 package com.example.mychatapp.util
 
+import android.app.Activity
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
@@ -11,6 +12,9 @@ import com.luck.picture.lib.entity.LocalMedia
 import com.luck.picture.lib.interfaces.OnResultCallbackListener
 import com.yalantis.ucrop.UCrop
 import com.yalantis.ucrop.UCropActivity
+import me.rosuh.filepicker.bean.FileItemBeanImpl
+import me.rosuh.filepicker.config.AbstractFileFilter
+import me.rosuh.filepicker.config.FilePickerManager
 import java.io.File
 import java.util.Date
 
@@ -22,7 +26,7 @@ object SelectMediaHelper {
         callback: (result: ArrayList<LocalMedia>) -> Unit
     ) {
         PictureSelector.create(context)
-            .openGallery(SelectMimeType.ofImage())
+            .openGallery(SelectMimeType.ofAll())
             .setMaxSelectNum(maxSelectNum)
             .setImageSpanCount(4)
             .setImageEngine(GlideEngine.createGlideEngine())
@@ -40,11 +44,16 @@ object SelectMediaHelper {
 
                 //
                 val ucropOptions = UCrop.Options()
-                ucropOptions.withAspectRatio(1f, 1f)
                 ucropOptions.setHideBottomControls(true)
                 ucropOptions.setShowCropFrame(true)
                 // 不允许自由调整裁剪框
-                ucropOptions.setFreeStyleCropEnabled(false)
+
+
+                if(maxSelectNum == 1){
+                    ucropOptions.withAspectRatio(1f, 1f)
+                    ucropOptions.setFreeStyleCropEnabled(false)
+                }
+
                 ucropOptions.setAllowedGestures(
                     UCropActivity.SCALE,
                     UCropActivity.ROTATE,
@@ -57,7 +66,6 @@ object SelectMediaHelper {
             }
             .forResult(object : OnResultCallbackListener<LocalMedia> {
                 override fun onResult(result: ArrayList<LocalMedia>?) {
-
                     if (result.isNullOrEmpty()) {
                         LogUtil.info("未选择任何图片")
                         return
@@ -74,4 +82,22 @@ object SelectMediaHelper {
             })
     }
 
+
+    fun selectFile(activity: Activity) {
+        FilePickerManager.from(activity)
+            .filter(object : AbstractFileFilter() {
+                override fun doFilter(listData: ArrayList<FileItemBeanImpl>): ArrayList<FileItemBeanImpl> {
+
+//                    return ArrayList(listData.filter { item ->
+//                        // 文件夹或是图片，则被滤出来，然后新建一个 ArrayList 返回给调用者即可
+//                        ((item.isDir) || item.fileType !is RasterImageFileType)
+//                    })
+
+                    return listData
+                }
+            })
+            //.registerFileType(arrayListOf(CustomFileType(0,"mp4")), true)
+            .maxSelectable(3)
+            .forResult(FilePickerManager.REQUEST_CODE)
+    }
 }

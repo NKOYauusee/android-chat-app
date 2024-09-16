@@ -4,7 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <variable
+            name="vm"
+            type="com.example.mychatapp.viewmodel.ApplicantViewModel" />
 
+        <import type="android.view.View"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -35,6 +39,17 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/img_back">
 
+            <TextView
+                android:id="@+id/no_result_msg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textSize="@dimen/_13ssp"
+                android:visibility="@{vm.hasResult ? View.INVISIBLE : View.VISIBLE}"
+                android:text="暂无任何搜索结果~~"
+                android:textColor="@color/primary_dark"
+                android:textStyle="bold" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/userListRecycleView"
                 android:layout_width="match_parent"
@@ -43,7 +58,7 @@
                 android:orientation="vertical"
                 android:overScrollMode="never"
                 android:padding="@dimen/_14sdp"
-                android:visibility="visible"
+                android:visibility="@{vm.hasResult ? View.VISIBLE : View.INVISIBLE}"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
         </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -28,6 +28,20 @@ object ChatListHelper {
         return res
     }
 
+
+    fun loadSpecificMsg(context: Context, friend: String, startDate: Long): MutableList<ChatBean> {
+        val key = UserStatusUtil.getCurLoginUser()
+        return UserDatabase.getInstance(context).getChatDao()
+            .loadSpecificMsg(key, startDate, friend)
+    }
+
+
+    fun loadNewMsg(context: Context, friend: String, startDate: Long): MutableList<ChatBean> {
+        val key = UserStatusUtil.getCurLoginUser()
+        return UserDatabase.getInstance(context).getChatDao()
+            .loadNewMsg(key, startDate, friend)
+    }
+
     // 保存聊天数据
     fun saveChats(
         context: Context,
@@ -47,7 +61,7 @@ object ChatListHelper {
         val chatBean = UserDatabase.getInstance(context).getChatDao().loadNewestMsg(key)
         MainUserSelectHelper.updateMainUser(context, chatBean)
     }
-
+    // 搜索聊天记录
     fun loadRelativeMsgWithSb(
         context: Context,
         owner: String,

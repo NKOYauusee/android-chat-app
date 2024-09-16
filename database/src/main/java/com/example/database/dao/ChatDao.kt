@@ -12,17 +12,21 @@ interface ChatDao {
     @Query("SELECT * FROM user_chat_table WHERE send_time < :sendTime AND `owner` = :key AND (receiver = :friend OR sender = :friend) ORDER BY send_time DESC LIMIT 10")
     fun loadHistory10Msg(key: String, sendTime: Long, friend: String): MutableList<ChatBean>
 
-    //加载和某人最近2天的10条聊天记录
-    @Query("SELECT * FROM user_chat_table WHERE send_time > :sendTime AND `owner` = :key AND (receiver = :friend OR sender = :friend) ORDER BY send_time DESC LIMIT 10")
+    // 加载和某人最近时间的 最新10条聊天记录
+    @Query("SELECT * FROM user_chat_table WHERE send_time >= :sendTime AND `owner` = :key AND (receiver = :friend OR sender = :friend) ORDER BY send_time DESC LIMIT 10")
     fun loadRecentMsg(key: String, sendTime: Long, friend: String): MutableList<ChatBean>
 
+    // 加载和某人特定时间起的10条数据
+    @Query("SELECT * FROM user_chat_table WHERE send_time >= :sendTime AND `owner` = :key AND (receiver = :friend OR sender = :friend) ORDER BY send_time ASC LIMIT 10")
+    fun loadSpecificMsg(key: String, sendTime: Long, friend: String): MutableList<ChatBean>
+
+    // 加载和某人特定时间之后的10条数据
+    @Query("SELECT * FROM user_chat_table WHERE send_time > :sendTime AND `owner` = :key AND (receiver = :friend OR sender = :friend) ORDER BY send_time ASC LIMIT 10")
+    fun loadNewMsg(key: String, sendTime: Long, friend: String): MutableList<ChatBean>
 
     @Query("SELECT * FROM user_chat_table WHERE `owner` = :key ORDER BY send_time DESC LIMIT 1")
     fun loadNewestMsg(key: String): ChatBean
 
-    //加载之前10条的聊天记录
-
-    //加载最近2天的聊天记录
 
     //删除聊天记录
     //@Query("delete FROM user_chat_table WHERE `order` = :order")
@@ -47,6 +51,6 @@ interface ChatDao {
     fun insertChat(chat: ChatBean)
 
 
-    @Query("SELECT * FROM user_chat_table WHERE owner = :owner AND (receiver = :who OR sender = :who) AND  message LIKE '%' || :keyword || '%'")
+    @Query("SELECT * FROM user_chat_table WHERE owner = :owner AND msgType = 0 AND (receiver = :who OR sender = :who) AND  message LIKE '%' || :keyword || '%'")
     fun loadRelativeMsgWithSb(owner: String, who: String, keyword: String): MutableList<ChatBean>
 }

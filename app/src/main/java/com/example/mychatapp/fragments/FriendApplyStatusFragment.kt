@@ -64,7 +64,7 @@ class FriendApplyStatusFragment :
         friendListJob?.cancel()
         friendApplyStatusList = object : MyObservable<ResBean<List<FriendApply>>>() {
             override fun success(res: ResBean<List<FriendApply>>) {
-                //LogUtil.info("好友申请请求结果 ->" + Gson().toJson(res.data!!))
+                LogUtil.info("好友申请请求结果 成功 ->" + Gson().toJson(res.data!!))
                 viewModel.hasApplyData.postValue(!res.data.isNullOrEmpty())
 
                 //LogUtil.info(res.data!!.toMutableList().size.toString())
@@ -86,11 +86,12 @@ class FriendApplyStatusFragment :
 
         friendListJob = lifecycleScope.launch(Dispatchers.IO) {
             while (isActive) {
-                ApiServiceHelper.service()
-                    .getFriendApplyStatus(UserStatusUtil.getCurLoginUser())
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread()).subscribe(friendApplyStatusList!!)
-
+                if(isVisible){
+                    ApiServiceHelper.service()
+                        .getFriendApplyStatus(UserStatusUtil.getCurLoginUser())
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread()).subscribe(friendApplyStatusList!!)
+                }
                 delay(2500)
             }
         }

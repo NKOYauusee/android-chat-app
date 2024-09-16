@@ -125,10 +125,20 @@ interface ApiService {
     @FormUrlEncoded
     @POST("user/search")
     fun searchRes(
-        @Field("searchContent") searchContent: String
+        @Field("searchContent") searchContent: String,
+        @Field("page") page: String
     ): Observable<ResBean<MutableList<UserBean>>>
 
     // 好友申请
     @POST("fri/addFriend")
     fun addFriendApply(@Body apply: FriendApply): Observable<ResBean<Nothing>>
+
+    @Multipart
+    @POST("media/fileUpload")
+    fun multiPartUpload(
+        @Part fileData: MultipartBody.Part,
+        @Part("userId") userId: RequestBody,
+        @Part("fileName") fileName: RequestBody,
+        @Part("chunkIndex") chunkIndex: RequestBody
+    ): Observable<ResBean<String>>
 }

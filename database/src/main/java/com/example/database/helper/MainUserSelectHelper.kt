@@ -1,7 +1,6 @@
 package com.example.database.helper
 
 import android.content.Context
-import com.example.common.util.LogUtil
 import com.example.common.util.UserStatusUtil
 import com.example.database.UserDatabase
 import com.example.database.bean.ChatBean
@@ -39,7 +38,7 @@ object MainUserSelectHelper {
         val hasChatBean = HasChatBean()
 
         hasChatBean.user = UserStatusUtil.getCurLoginUser()
-        hasChatBean.newMsg = MessageType.getDescFromType(chatBean.type) ?: chatBean.message
+        hasChatBean.newMsg = MessageType.getDescFromType(chatBean.msgType) ?: chatBean.message
         hasChatBean.sendTime = chatBean.sendTime
 
         //对方邮箱
@@ -56,7 +55,7 @@ object MainUserSelectHelper {
             hasChatBean.email
         )
 
-        LogUtil.info("待插入 -> ${hasChatBean.isRead}")
+        //LogUtil.info("待插入 -> ${hasChatBean.isRead}")
         insert(context, hasChatBean)
     }
 

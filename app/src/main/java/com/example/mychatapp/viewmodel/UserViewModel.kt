@@ -6,6 +6,5 @@ import com.example.common.viewmodel.BaseViewModel
 
 class UserViewModel(mApplication: Application) : BaseViewModel(mApplication) {
     val isClickBatchManage = MutableLiveData<Boolean>(false)
-
     val hasFriend = MutableLiveData<Boolean>(false)
 }

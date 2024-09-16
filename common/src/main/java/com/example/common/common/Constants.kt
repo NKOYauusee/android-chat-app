@@ -4,6 +4,10 @@ package com.example.common.common
 class Constants {
     companion object {
         const val IS_SIGN_IN = "IS_SIGN_IN"
+        const val REQUEST_CODE = 1
+
+        // 2 MB
+        const val CHUNK_SIZE: Int = 1024 * 1024
 
         //
         const val CHAT_FRIEND = "CHAT_FRIEND"
@@ -14,6 +18,9 @@ class Constants {
         const val USER_AVATAR = "USER_AVATAR"
         const val USER_ID = "USER_ID"
         const val LOGIN_TOKEN = "LOGIN_TOKEN"
+
+        const val SERVER_IP = "SERVER_IP"
+        const val SERVER_PORT = "SERVER_PORT"
 
         const val ONE_DAY: Long = 24 * 60 * 60 * 1000
 
