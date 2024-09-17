@@ -102,7 +102,6 @@ class MainChatAdapter(
         return false
     }
 
-    @SuppressLint("SetTextI18n")
     private fun updateHolder(holder: MainChatViewHolder, position: Int) {
         //LogUtil.info("$position -> ${HttpUrl.IMG_URL + chatList[position].avatar}")
         Glide.with(holder.itemView.context)

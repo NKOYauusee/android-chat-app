@@ -201,7 +201,7 @@ class ChatAdapter(
 
         // 下载
         dataBinding.btnDownload.setOnClickListener {
-            GlideUtil.loadLocalImage(context, R.drawable.loading).into(dataBinding.btnDownload)
+            GlideUtil.loadLocalGifImage(context, R.drawable.loading).into(dataBinding.btnDownload)
 
             listener.download(chat) {
                 dataBinding.btnDownload.visibility = View.GONE
@@ -212,10 +212,13 @@ class ChatAdapter(
             listener.imagePreview(this.chatList, position)
         }
         // TODO 视频预览
-        dataBinding.videoWrapper.setOnClickListener {
+        dataBinding.messageVideo.setOnClickListener {
+            dataBinding.messageVideo.visibility = View.INVISIBLE
             val url = getPath(chat.message, chat.msgType)
             url?.let {
-                listener.videoPreview(dataBinding.videoPlayer, it)
+                listener.videoPreview(dataBinding.videoPlayer, it) {
+                    dataBinding.messageVideo.visibility = View.VISIBLE
+                }
             }
         }
 
@@ -229,13 +232,11 @@ class ChatAdapter(
 
             MessageType.IMAGE.type -> {
                 //val bitmap = FileUtil.getBitmap(uri)
-                val maxWidth = (DensityUtils.getWidth(holder.itemView.context) * 0.4).toInt()
-
+                val maxWidth = (DensityUtils.getWidth(context) * 0.4).toInt()
                 val requestOptions = RequestOptions().transform(RoundedCorners(20))
-
                 //LogUtil.info("path -> ${getPath(chat.message, chat.type)}")
                 GlideUtil.loadUrlImage(context, getPath(chat.message, chat.msgType))
-                    .override(maxWidth)
+                    .override(300)
                     .apply(requestOptions)
                     .into(dataBinding.messageImg)
 
@@ -254,12 +255,12 @@ class ChatAdapter(
                 val requestOptions = RequestOptions().transform(RoundedCorners(20))
 
                 //LogUtil.info("path -> ${getPath(chat.message, chat.type)}")
-                GlideUtil.loadUrlImage(context, getPath(chat.message, chat.msgType))
-                    .override(maxWidth)
-                    .apply(requestOptions)
-                    .into(dataBinding.messageVideo)
+//                GlideUtil.loadUrlImage(context, getPath(chat.message, chat.msgType))
+//                    .override(maxWidth)
+//                    .apply(requestOptions)
+//                    .into(dataBinding.messageVideo)
 
-                dataBinding.messageVideo.visibility = View.VISIBLE
+                dataBinding.videoWrapper.visibility = View.VISIBLE
             }
         }
     }
@@ -277,21 +278,26 @@ class ChatAdapter(
 
         // 下载
         dataBinding.btnDownload.setOnClickListener {
-            GlideUtil.loadLocalImage(context, R.drawable.loading).into(dataBinding.btnDownload)
+            GlideUtil.loadLocalGifImage(context, R.drawable.loading).into(dataBinding.btnDownload)
 
             listener.download(chat) {
                 dataBinding.btnDownload.visibility = View.GONE
             }
         }
+
         // 预览
         dataBinding.messageImg.setOnClickListener {
             listener.imagePreview(this.chatList, position)
         }
+
         // TODO 视频预览
-        dataBinding.videoWrapper.setOnClickListener {
+        dataBinding.messageVideo.setOnClickListener {
+            dataBinding.messageVideo.visibility = View.INVISIBLE
             val url = getPath(chat.message, chat.msgType)
             url?.let {
-                listener.videoPreview(dataBinding.videoPlayer, it)
+                listener.videoPreview(dataBinding.videoPlayer, it) {
+                    dataBinding.messageVideo.visibility = View.VISIBLE
+                }
             }
         }
 
@@ -331,10 +337,10 @@ class ChatAdapter(
                 val requestOptions = RequestOptions().transform(RoundedCorners(20))
 
                 //LogUtil.info("path -> ${getPath(chat.message, chat.type)}")
-                GlideUtil.loadUrlImage(context, getPath(chat.message, chat.msgType))
-                    .override(maxWidth)
-                    .apply(requestOptions)
-                    .into(dataBinding.messageVideo)
+//                GlideUtil.loadUrlImage(context, getPath(chat.message, chat.msgType))
+//                    .override(maxWidth)
+//                    .apply(requestOptions)
+//                    .into(dataBinding.messageVideo)
 
                 dataBinding.videoWrapper.visibility = View.VISIBLE
             }

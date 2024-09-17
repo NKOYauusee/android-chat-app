@@ -9,6 +9,11 @@ import android.widget.ImageView
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.BackoffPolicy
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
@@ -40,6 +45,8 @@ import com.example.mychatapp.websocket.WebSocketManager
 import com.flyjingfish.openimagelib.OpenImage
 import com.google.gson.Gson
 import com.luck.picture.lib.entity.LocalMedia
+import com.shuyu.gsyvideoplayer.GSYVideoManager
+import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -47,14 +54,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.rosuh.filepicker.config.FilePickerManager
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 
 class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsgListener {
     private var chatListAdapter: ChatAdapter? = null
+
     //private val gson = Gson()
+    private var uploadRequest: OneTimeWorkRequest? = null
+
+    private val constraints = Constraints.Builder()
+        .setRequiresBatteryNotLow(true)
+        .setRequiredNetworkType(NetworkType.CONNECTED)
+        .build()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +80,8 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
         initListener()
         loadMsg()
         //ZoomMediaLoader.getInstance().init(ImagePreviewLoader())
+
+
     }
 
     override fun onResume() {
@@ -108,7 +127,7 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
 
                 WebSocketManager.instance.sendMsg(chat) {
                     lifecycleScope.launch(Dispatchers.Main) {
-                        MyToast(this@ChatActivity).show("发送失败，请检查网络设置！")
+                        MyToast(this@ChatActivity).show(getString(R.string.info_send_failed_check_network))
                     }
                 }
 //                MainUserSelectHelper.insertProfile(
@@ -208,27 +227,42 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
         }
     }
 
+    private val mutex = Mutex()
+
     private fun backgroundUploadFile(receiver: String, name: String, file: File, fileType: Int) {
-        val inputData = workDataOf(
-            "file_path" to file.absolutePath,
-            "file_type" to fileType,
-            "receiver" to receiver,
-            "name" to name
-        )
+        lifecycleScope.launch {
+            mutex.withLock {
+                val inputData = workDataOf(
+                    "file_path" to file.absolutePath,
+                    "file_type" to fileType,
+                    "receiver" to receiver,
+                    "name" to name
+                )
 
-        val uploadRequest =
-            OneTimeWorkRequestBuilder<FileUploadWorker>().setInputData(inputData).build()
+                uploadRequest =
+                    OneTimeWorkRequestBuilder<FileUploadWorker>()
+                        .setInputData(inputData)
+                        .setConstraints(constraints)
+                        .setBackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.SECONDS)
+                        .build()
 
-        WorkManager.getInstance(this@ChatActivity).enqueue(uploadRequest)
-
-        // 监听任务状态
-        WorkManager.getInstance(this).getWorkInfoByIdLiveData(uploadRequest.id)
-            .observe(this) { workInfo ->
-                if (workInfo != null && workInfo.state.isFinished) {
-                    val result = workInfo.outputData.getString("filePath")
-                    LogUtil.info("上传任务完成 res -> $result")
-                }
+                WorkManager.getInstance(this@ChatActivity)
+                    .enqueueUniqueWork(
+                        System.currentTimeMillis().toString(),
+                        ExistingWorkPolicy.REPLACE,
+                        uploadRequest!!
+                    )
             }
+        }
+
+//        // 监听任务状态
+//        WorkManager.getInstance(this).getWorkInfoByIdLiveData(uploadRequest.id)
+//            .observe(this) { workInfo ->
+//                if (workInfo != null && workInfo.state.isFinished) {
+//                    val result = workInfo.outputData.getString("filePath")
+//                    LogUtil.info("上传任务完成 res -> $result")
+//                }
+//            }
     }
 
     private fun listener() {
@@ -402,19 +436,40 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
         }
     }
 
-    override fun videoPreview(videoPlayer: StandardGSYVideoPlayer, url: String) {
-//        videoPlayer.setUp(url, true, "")
-//        videoPlayer.backButton.visibility = View.VISIBLE
-//
-//        //getPath(chat.message, chat.msgType)?.let { it1 -> listener.videoPreView(it1) }
-//        videoPlayer.setIsTouchWiget(true)
+    override fun onDestroy() {
+        super.onDestroy()
+        GSYVideoManager.releaseAllVideos()
+        uploadRequest?.let {
+            WorkManager.getInstance(this).getWorkInfoByIdLiveData(it.id)
+                .removeObservers(this)
+        }
+    }
+
+    override fun videoPreview(
+        videoPlayer: StandardGSYVideoPlayer,
+        url: String,
+        callback: () -> Unit
+    ) {
+        LogUtil.info("视频预览 $url")
+
+        videoPlayer.setUp(url, true, "")
+        videoPlayer.backButton.visibility = View.INVISIBLE
+
+        //getPath(chat.message, chat.msgType)?.let { it1 -> listener.videoPreView(it1) }
+        videoPlayer.setIsTouchWiget(true)
 //        videoPlayer.backButton.setOnClickListener {
 //            videoPlayer.setVideoAllCallBack(null);
 //        }
-//
-//        videoPlayer.isNeedOrientationUtils = false
-//
-//        videoPlayer.startPlayLogic()
+
+        videoPlayer.setVideoAllCallBack(object : GSYSampleCallBack() {
+            override fun onAutoComplete(url: String?, vararg objects: Any?) {
+                super.onAutoComplete(url, *objects)
+                callback()
+            }
+        })
+
+        videoPlayer.isNeedOrientationUtils = false
+        videoPlayer.startPlayLogic()
     }
 
 
@@ -433,7 +488,7 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
 
     // TODO 下载文件
     override fun download(chat: ChatBean, callback: () -> Unit) {
-        MyToast(this).show("开始下载")
+        MyToast(this).show(getString(R.string.info_start_downloading))
         lifecycleScope.launch(Dispatchers.IO) {
             ChatHelper.getPath(chat.message, chat.msgType)?.let {
                 LogUtil.info("视频下载地址 $it")
@@ -443,7 +498,8 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
 
                 withContext(Dispatchers.Main) {
                     ToastUtil.showToastMsg(
-                        "${downloader.getFileDownLoadPath()} 下载完成", this@ChatActivity
+                        "${downloader.getFileDownLoadPath()} ${getString(R.string.info_download_complete)}",
+                        this@ChatActivity
                     )
                     callback()
                 }

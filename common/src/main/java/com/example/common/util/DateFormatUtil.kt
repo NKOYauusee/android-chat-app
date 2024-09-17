@@ -8,7 +8,7 @@ import java.util.Locale
 
 object DateFormatUtil {
 
-    fun formatTime(time: Long, pattern: String = "yyyy年MM月dd HH:mm"): String {
+    fun formatTime(time: Long, pattern: String = "yyyy.MM.dd HH:mm"): String {
         val dateFormat = SimpleDateFormat(pattern, Locale.getDefault())
         return dateFormat.format(Date(time))
     }
@@ -33,7 +33,7 @@ object DateFormatUtil {
             (gap in Constants.ONE_DAY * 30 until Constants.ONE_DAY * 365) -> {
                 formatTime(
                     time,
-                    "MM月dd HH:mm"
+                    "MM.dd HH:mm"
                 )
             }
 

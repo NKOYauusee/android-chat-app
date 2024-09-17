@@ -17,7 +17,7 @@ import com.example.database.dao.MainChatDao
 
 @Database(
     entities = [ChatBean::class, HasChatBean::class, UserBean::class, UserFriBean::class, FriendApply::class],
-    version = 2, exportSchema = false
+    version = 1, exportSchema = false
 )
 @TypeConverters(DbConverter::class)
 abstract class UserDatabase : RoomDatabase() {

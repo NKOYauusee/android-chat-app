@@ -5,6 +5,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import com.example.common.common.DataBindingConfig
 import com.example.common.ui.BaseActivity
+import com.example.common.util.LogUtil
 import com.example.mychatapp.BR
 import com.example.mychatapp.R
 import com.example.mychatapp.databinding.ActivitySettingBinding
@@ -33,9 +34,11 @@ class SettingActivity : BaseActivity<ActivitySettingBinding, SettingViewModel>()
                 if (ip.isEmpty() || !isValidIp(ip))
                     return
 
+                LogUtil.info("New Server Address $ip")
                 viewModel.setServerIp(ip)
             }
         })
+
         dataBinding.serverPort.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
             }
@@ -49,6 +52,7 @@ class SettingActivity : BaseActivity<ActivitySettingBinding, SettingViewModel>()
                 if (port.isEmpty() || !isValidPort(port))
                     return
 
+                LogUtil.info("New Server Port $port")
                 viewModel.setServerPort(port)
             }
         })
@@ -64,12 +68,7 @@ class SettingActivity : BaseActivity<ActivitySettingBinding, SettingViewModel>()
         return segment.toIntOrNull() != null
     }
 
-
-    fun isValidIp(segment: String): Boolean {
-        return segment.toIntOrNull() != null
-    }
-
-    fun isValidIPAddress(ip: String): Boolean {
+    fun isValidIp(ip: String): Boolean {
         val regex =
             Regex("^((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$")
         return regex.matches(ip)

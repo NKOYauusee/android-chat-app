@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.common.util.UserStatusUtil
 import com.example.database.bean.UserBean
+import com.example.database.bean.UserFriBean
 import com.example.mychatapp.R
 import com.example.mychatapp.databinding.ItemApplicantBinding
 import com.example.mychatapp.listener.ApplyListener
@@ -15,6 +16,7 @@ import com.example.mychatapp.util.HttpHelper
 
 class SearchResultAdapter(
     private val searchItem: String,
+    private val friendList: MutableList<UserFriBean>,
     private val userList: MutableList<UserBean>,
     private val listener: ApplyListener
 ) : RecyclerView.Adapter<SearchResultAdapter.ViewHolder>(), BaseAdapter {
@@ -43,13 +45,15 @@ class SearchResultAdapter(
         val user = userList[position]
 
         val email = user.email
-        when (email) {
-            (UserStatusUtil.getCurLoginUser()) -> {
-                dataBinding.btnSendApply.visibility = View.INVISIBLE
-            }
-
-            // TODO 判断是否为已添加的好友
+        if (email == UserStatusUtil.getCurLoginUser()) {
+            dataBinding.btnSendApply.visibility = View.INVISIBLE
         }
+
+        for (fri in friendList) {
+            if (fri.email == email)
+                dataBinding.btnSendApply.visibility = View.INVISIBLE
+        }
+
 
         dataBinding.applyName.text =
             bindHighlightedItem(user.username!!, searchItem) ?: user.username
@@ -64,7 +68,7 @@ class SearchResultAdapter(
 
         // 准备申请
         dataBinding.btnSendApply.setOnClickListener {
-            if (dataBinding.btnSendApply.text == "已申请")
+            if (dataBinding.btnSendApply.text == holder.itemView.context.getString(R.string.info_applied))
                 return@setOnClickListener
 
             dataBinding.applyWrapper.visibility = View.VISIBLE
@@ -83,7 +87,8 @@ class SearchResultAdapter(
                 // TODO 提交申请后 修改ui显示
                 dataBinding.applyWrapper.visibility = View.GONE
                 dataBinding.btnSendApply.visibility = View.VISIBLE
-                dataBinding.btnSendApply.text = "已申请"
+                dataBinding.btnSendApply.text =
+                    holder.itemView.context.getString(R.string.info_applied)
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.example.mychatapp.util
 
 import com.example.api.bean.HttpUrl
+import com.example.common.util.LogUtil
 import com.example.common.util.SettingUtil
 
 object HttpHelper {
@@ -18,6 +19,7 @@ object HttpHelper {
     }
 
     private fun baseUrlPart(): String {
+        LogUtil
         val ip: String = SettingUtil.getServerIpAddress().ifEmpty { HttpUrl.IP }
         val port: String = SettingUtil.getServerPort().ifEmpty { HttpUrl.PORT }
 

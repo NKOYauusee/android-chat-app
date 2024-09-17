@@ -161,6 +161,7 @@
             android:layout_gravity="start"
             android:background="@color/primary"
             app:headerLayout="@layout/drawer_profile"
+            app:itemTextColor="@color/white"
             app:menu="@menu/drawer_menu">
 
             <LinearLayout

@@ -5,11 +5,6 @@
 
     <data>
 
-        <variable
-            name="vm"
-            type="com.example.mychatapp.viewmodel.UserViewModel" />
-
-        <import type="android.view.View" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -18,7 +13,7 @@
         android:layout_height="match_parent"
         android:animateLayoutChanges="true"
         android:background="@color/primary"
-        tools:context=".activities.UserActivity">
+        tools:context=".activities.BlacklistActivity">
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/img_back"
@@ -36,7 +31,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/choose_user_chat"
+            android:text="@string/blacklist"
             android:textColor="@color/white"
             android:textSize="@dimen/_14ssp"
             android:textStyle="bold"
@@ -44,20 +39,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/img_back" />
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/img_batch_manger"
-            android:layout_width="@dimen/_35sdp"
-            android:layout_height="@dimen/_35sdp"
-            android:layout_marginTop="@dimen/_12sdp"
-            android:layout_marginEnd="@dimen/_16sdp"
-            android:background="@drawable/background_icon"
-            android:padding="@dimen/_6sdp"
-            android:src="@drawable/ic_batch_manager"
-            android:tint="@color/white"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -79,7 +60,6 @@
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
             <TextView
-                android:textStyle="bold"
                 android:id="@+id/textErrorMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -88,10 +68,11 @@
                 android:layout_marginTop="@dimen/_25sdp"
                 android:layout_marginEnd="@dimen/_24sdp"
                 android:gravity="center"
-                android:text="@string/info_go_search_and_add"
+                android:text="@string/no_result"
                 android:textColor="@color/secondary_text"
                 android:textSize="@dimen/_12ssp"
-                android:visibility="@{vm.hasFriend ? View.INVISIBLE : View.VISIBLE}" />
+                android:textStyle="bold"
+                android:visibility="visible" />
         </FrameLayout>
 
         <LinearLayout
@@ -131,5 +112,6 @@
                 android:textSize="@dimen/_16ssp"
                 android:textStyle="bold" />
         </LinearLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

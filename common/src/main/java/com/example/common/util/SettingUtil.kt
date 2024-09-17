@@ -32,7 +32,7 @@ object SettingUtil {
     }
 
     fun setServerPort(serverPort: String) {
-        SpUtil.setParam(Constants.SERVER_IP, serverPort)
+        SpUtil.setParam(Constants.SERVER_PORT, serverPort)
     }
 
 }

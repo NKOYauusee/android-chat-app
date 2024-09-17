@@ -15,23 +15,15 @@ import com.example.mychatapp.websocket.WebSocketManager
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
 import java.io.File
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 class FileUploadWorker(
     context: Context,
     worker: WorkerParameters
 ) : CoroutineWorker(context, worker) {
     override suspend fun doWork(): Result {
-//        LogUtil.info(inputData.getString("file_path").toString())
-//        LogUtil.info(inputData.getString("receiver").toString())
-//        LogUtil.info(inputData.getString("name").toString())
 
         // 获取文件路径
         val filePath = inputData.getString("file_path") ?: return Result.failure()
@@ -46,8 +38,9 @@ class FileUploadWorker(
             LogUtil.info("path $path")
             val chat = ChatHelper.generateChat(receiver, receiverName, path, fileType)
 
-            WebSocketManager.instance.sendMsg(chat)
-
+            withContext(Dispatchers.Main) {
+                WebSocketManager.instance.sendMsg(chat)
+            }
             Result.success(workDataOf("filePath" to path))  // 上传成功
         } catch (e: Exception) {
             LogUtil.info("文件上传失败: ${e.message}")
@@ -63,7 +56,7 @@ class FileUploadWorker(
         var filePath = ""
 
         // 并发上传分片的任务数量
-        val semaphore = Semaphore(2)
+        val semaphore = Semaphore(1)
         withContext(Dispatchers.IO) {
             val finalChunk = totalChunk.coerceAtLeast(1)
             LogUtil.info("${file.name} 文件大小 -> $totalSize 分片数 $finalChunk")
@@ -114,7 +107,8 @@ class FileUploadWorker(
                                 }
 
                                 override fun failed(e: Throwable) {
-                                    LogUtil.info("上传失败")
+                                    semaphore.release()
+                                    LogUtil.info("$chunkIndex 上传失败")
                                 }
                             })
                     }

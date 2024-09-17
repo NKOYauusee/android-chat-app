@@ -55,7 +55,10 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
     private fun loadLocalInfo() {
         lifecycleScope.launch(Dispatchers.Main) {
             val dataList = withContext(Dispatchers.IO) {
-                UserFriendHelper.selectFriends(this@UserActivity, UserStatusUtil.getCurLoginUser())
+                UserFriendHelper.selectNoBlockedFriends(
+                    this@UserActivity,
+                    UserStatusUtil.getCurLoginUser()
+                )
             }
 
             //userAdapter = UserAdapter(dataList, this@UserActivity)
@@ -103,12 +106,11 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
         list: MutableList<UserFriBean>,
         posList: MutableList<Int>,
     ) {
-        if (list.size == 0)
-            return
+        if (list.size == 0) return
 
         dialog?.dismiss()
-        dialog = AlertDialog.Builder(this).setTitle("确定删除这些用户?")
-            .setPositiveButton("确定") { dialog, _ ->
+        dialog = AlertDialog.Builder(this).setTitle(getString(R.string.info_confirm_deleting_users))
+            .setPositiveButton(getString(R.string.confirm)) { dialog, _ ->
                 dialog.dismiss()
                 ApiServiceHelper.service().batchDeleteFri(
                     list
@@ -116,7 +118,7 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
                     .subscribe(object : MyObservable<ResBean<Nothing>>() {
                         override fun success(res: ResBean<Nothing>) {
                             if (res.code != 200) {
-                                MyToast(mContext).show("操作失败")
+                                MyToast(mContext).show(getString(R.string.info_act_fail))
                                 return
                             }
 
@@ -129,12 +131,12 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
                         }
 
                         override fun failed(e: Throwable) {
-                            MyToast(mContext).show("操作失败，请稍后再试")
+                            MyToast(mContext).show(getString(R.string.info_act_fail))
                             Log.d(TAG, "failed blackListFriend: ", e)
                         }
 
                     })
-            }.setNegativeButton("取消") { dialog, _ ->
+            }.setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                 dialog.dismiss()
             }.create()
 
@@ -165,22 +167,25 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
     // 拉黑好友回调
     override fun blackListFriend(friend: UserFriBean, callback: (() -> Unit)) {
         dialog?.dismiss()
-        dialog = AlertDialog.Builder(this).setTitle("确定拉黑该用户?")
-            .setPositiveButton("确定") { dialog, _ ->
+        dialog = AlertDialog.Builder(this).setTitle(getString(R.string.info_confirm_block_user))
+            .setPositiveButton(getString(R.string.confirm)) { dialog, _ ->
                 dialog.dismiss()
                 friend.status = FriendStatusEnum.BLACKLIST.statusCode
+
                 ApiServiceHelper.service().setFriendStatus(friend).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(object : MyObservable<ResBean<Nothing>>() {
                         override fun success(res: ResBean<Nothing>) {
                             if (res.code != 200) {
-                                MyToast(mContext).show("操作失败")
+                                MyToast(mContext).show(getString(R.string.info_act_fail))
                                 return
                             }
-                            MyToast(mContext).show("拉黑成功")
+                            MyToast(mContext).show(getString(R.string.info_blocked_successfully))
                             callback()
 
                             lifecycleScope.launch(Dispatchers.IO) {
+                                UserFriendHelper.blacklistFriend(this@UserActivity, friend)
+
                                 MainUserSelectHelper.deleteMainHasChatSow(
                                     this@UserActivity, friend.owner, friend.email
                                 )
@@ -188,12 +193,12 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
                         }
 
                         override fun failed(e: Throwable) {
-                            MyToast(mContext).show("操作失败，请稍后再试")
+                            MyToast(mContext).show(getString(R.string.info_act_fail))
                             Log.d(TAG, "failed blackListFriend: ", e)
                         }
 
                     })
-            }.setNegativeButton("取消") { dialog, _ ->
+            }.setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                 dialog.dismiss()
             }.create()
 
@@ -206,8 +211,8 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
     // 删除好友回调
     override fun deleteFriend(friend: UserFriBean, callback: (() -> Unit)) {
         dialog?.dismiss()
-        dialog = AlertDialog.Builder(this).setTitle("确定删除该用户?")
-            .setPositiveButton("确定") { dialog, _ ->
+        dialog = AlertDialog.Builder(this).setTitle(getString(R.string.info_confirm_delete_user))
+            .setPositiveButton(getString(R.string.confirm)) { dialog, _ ->
                 dialog.dismiss()
                 //friend.status = FriendStatusEnum.BLACKLIST.statusCode
                 ApiServiceHelper.service().deleteFri(UserStatusUtil.getCurLoginUser(), friend.email)
@@ -215,10 +220,10 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
                     .subscribe(object : MyObservable<ResBean<Nothing>>() {
                         override fun success(res: ResBean<Nothing>) {
                             if (res.code != 200) {
-                                MyToast(mContext).show("操作失败")
+                                MyToast(mContext).show(getString(R.string.info_act_fail))
                                 return
                             }
-                            MyToast(mContext).show("删除成功")
+                            MyToast(mContext).show(getString(R.string.info_delete_successfully))
                             callback()
 
                             lifecycleScope.launch(Dispatchers.IO) {
@@ -235,12 +240,12 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
                         }
 
                         override fun failed(e: Throwable) {
-                            MyToast(mContext).show("操作失败，请稍后再试")
+                            MyToast(mContext).show(getString(R.string.info_act_fail))
                             Log.d(TAG, "failed blackListFriend: ", e)
                         }
 
                     })
-            }.setNegativeButton("取消") { dialog, _ ->
+            }.setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                 dialog.dismiss()
             }.create()
         dialog?.setCanceledOnTouchOutside(false)

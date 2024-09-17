@@ -8,29 +8,18 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingStart="@dimen/_5sdp"
-        android:paddingTop="@dimen/_5sdp"
-        android:paddingEnd="@dimen/_10sdp"
-        android:paddingBottom="@dimen/_8sdp">
-
-        <CheckBox
-            android:id="@+id/batch_delete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@id/viewSupporter"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/viewSupporter" />
+        android:layout_height="match_parent"
+        android:paddingTop="@dimen/_15sdp">
 
         <com.makeramen.roundedimageview.RoundedImageView
             android:id="@+id/imageProfile"
             android:layout_width="@dimen/_55sdp"
             android:layout_height="@dimen/_55sdp"
+            android:layout_marginStart="@dimen/_12sdp"
             android:scaleType="centerCrop"
             android:src="@drawable/background_image"
             android:visibility="visible"
-            app:layout_constraintStart_toEndOf="@id/batch_delete"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:riv_corner_radius="@dimen/_12sdp" />
 
@@ -74,43 +63,19 @@
             app:layout_constraintStart_toEndOf="@id/imageProfile"
             app:layout_constraintTop_toBottomOf="@id/viewSupporter" />
 
-        <LinearLayout
-            android:id="@+id/friendActionWrapper"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_5sdp"
-            android:orientation="horizontal"
-            android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="@id/textEmail"
+
+        <ImageView
+            android:id="@+id/blacklist_delete"
+            android:layout_width="@dimen/_24sdp"
+            android:layout_height="@dimen/_24sdp"
+            android:layout_marginEnd="@dimen/_7sdp"
+            android:background="@drawable/ic_delete"
+            android:padding="@dimen/_10sdp"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="@id/viewSupporter"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textName">
+            app:layout_constraintTop_toTopOf="@id/viewSupporter"
+            app:layout_goneMarginEnd="@dimen/_12sdp" />
 
-            <TextView
-                android:id="@+id/blacklist_friend_btn"
-                android:layout_width="wrap_content"
-                android:minWidth="@dimen/_45sdp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/_6sdp"
-                android:background="@drawable/background_btn_blacklist"
-                android:padding="@dimen/_5sdp"
-                android:text="@string/blacklist_friend"
-                android:textAlignment="center"
-                android:textColor="@color/white"
-                android:textSize="@dimen/_8ssp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/delete_friend_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/background_btn_delete"
-                android:minWidth="@dimen/_45sdp"
-                android:padding="@dimen/_6sdp"
-                android:text="@string/delete_friend"
-                android:textAlignment="center"
-                android:textColor="@color/white"
-                android:textSize="@dimen/_8ssp"
-                android:textStyle="bold" />
-        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

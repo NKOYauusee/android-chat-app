@@ -21,6 +21,15 @@ interface FriendDao {
     @Query("SELECT * FROM user_friend WHERE owner = :owner")
     fun selectFriends(owner: String): MutableList<UserFriBean>
 
+    @Query("SELECT * FROM user_friend WHERE owner = :owner AND status = 0")
+    fun selectNoBlockedFriends(owner: String): MutableList<UserFriBean>
+
+    @Query("SELECT * FROM user_friend WHERE owner = :owner AND status = 1")
+    fun selectBlockedFriends(owner: String): MutableList<UserFriBean>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun blacklistFriend(userFriBean: UserFriBean)
+
     @Query("SELECT * FROM user_friend WHERE owner = :owner AND (email LIKE '%' || :word || '%' OR username LIKE '%' || :word || '%' ) ")
     fun selectFriendsByWord(owner: String, word: String): MutableList<UserFriBean>
 

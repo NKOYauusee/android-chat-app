@@ -1,6 +1,7 @@
 package com.example.mychatapp.websocket
 
 import android.content.Context
+import android.util.Log
 import com.example.common.util.LogUtil
 import com.example.common.util.UserStatusUtil
 import com.example.database.bean.ChatBean
@@ -49,8 +50,9 @@ class WebSocketManager {
         LogUtil.info("send-> " + gson.toJson(chatBean))
         try {
             websocketClient?.sendMsg(chatBean)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             callback()
+            Log.e("xht", "sendMsg: ", e)
         }
     }
 

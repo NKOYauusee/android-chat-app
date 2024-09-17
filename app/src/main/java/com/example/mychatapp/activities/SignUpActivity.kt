@@ -47,12 +47,12 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding, BaseViewModel>() {
                     res.info?.let {
                         MyToast(mContext).show(it)
                     }
-                        ?: MyToast(mContext).show("注册失败")
+                        ?: MyToast(mContext).show(getString(R.string.info_register_fail))
 
                     return
                 }
 
-                ToastUtil.showToastMsg("注册成功", mContext)
+                ToastUtil.showToastMsg(getString(R.string.info_register_success), mContext)
 
                 res.data?.let {
                     UserUtil.setLoginStatus(it, true)
@@ -69,7 +69,7 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding, BaseViewModel>() {
 
             override fun failed(e: Throwable) {
                 Log.e(TAG, "failed: ", e)
-                MyToast(mContext).show("注册失败")
+                MyToast(mContext).show(getString(R.string.info_register_fail))
             }
         }
     }
@@ -92,7 +92,7 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding, BaseViewModel>() {
             val confirmedPwd = dataBinding.registerConfirmPwd.text.toString()
 
             if (pwd != confirmedPwd) {
-                MyToast(mContext).show("两次密码输入不一致，请检查输入")
+                MyToast(mContext).show(getString(R.string.info_check_password_mismatch))
                 //ToastUtil.showToastMsg("两次密码输入不一致，请检查输入", mContext)
             } else {
                 if (fileData == null || fileData!!.length() == 0L) {

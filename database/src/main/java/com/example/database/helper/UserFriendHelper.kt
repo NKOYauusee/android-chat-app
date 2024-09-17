@@ -1,7 +1,6 @@
 package com.example.database.helper
 
 import android.content.Context
-import com.example.common.util.UserStatusUtil
 import com.example.database.UserDatabase
 import com.example.database.bean.UserFriBean
 
@@ -23,6 +22,18 @@ object UserFriendHelper {
         return UserDatabase.getInstance(context).getFriendDao().selectFriends(email)
     }
 
+    fun selectNoBlockedFriends(context: Context, email: String): MutableList<UserFriBean> {
+        return UserDatabase.getInstance(context).getFriendDao().selectNoBlockedFriends(email)
+    }
+
+    fun selectBlockedFriends(context: Context, email: String): MutableList<UserFriBean> {
+        return UserDatabase.getInstance(context).getFriendDao().selectBlockedFriends(email)
+    }
+
+    fun blacklistFriend(context: Context, friend: UserFriBean) {
+        UserDatabase.getInstance(context).getFriendDao().blacklistFriend(friend)
+    }
+
     fun selectFriendsByWords(
         context: Context,
         email: String,
@@ -38,6 +49,8 @@ object UserFriendHelper {
 
     fun batchDeleteFriend(context: Context, friendList: MutableList<UserFriBean>) {
         UserDatabase.getInstance(context).getFriendDao()
-            .batchDelete( friendList)
+            .batchDelete(friendList)
     }
+
+    //fun blacklistFriend(context: Contextm,)
 }

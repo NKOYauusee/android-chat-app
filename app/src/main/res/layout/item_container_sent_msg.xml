@@ -19,7 +19,7 @@
             android:background="@drawable/background_sent_msg"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.8">
+            app:layout_constraintWidth_percent="0.7">
 
             <TextView
                 android:id="@+id/textMessage"
@@ -33,30 +33,35 @@
                 android:textSize="@dimen/_13ssp"
                 app:layout_constraintWidth_max="wrap" />
 
-            <FrameLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/video_wrapper"
-                android:layout_width="@dimen/_165sdp"
-                android:layout_height="@dimen/_95sdp"
+                android:layout_width="@dimen/_160sdp"
+                android:layout_height="wrap_content"
                 android:layout_margin="@dimen/_5sdp"
-                android:orientation="horizontal"
-                android:visibility="gone">
+                android:visibility="visible">
 
 
                 <com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer
                     android:id="@+id/video_player"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_gravity="center" />
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent " />
 
                 <ImageView
                     android:id="@+id/message_video"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:minWidth="@dimen/_30sdp"
-                    android:minHeight="@dimen/_30sdp"
-                    android:padding="@dimen/_5sdp"
+                    android:layout_width="@dimen/_50sdp"
+                    android:layout_height="@dimen/_50sdp"
+                    android:layout_gravity="center"
+                    android:background="#00000000"
                     android:scaleType="centerCrop"
-                    android:visibility="visible" />
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <!--                <androidx.appcompat.widget.AppCompatImageView-->
                 <!--                    android:id="@+id/img_back"-->
@@ -67,12 +72,13 @@
                 <!--                    android:padding="@dimen/_6sdp"-->
                 <!--                    android:src="@drawable/ic_continue"-->
                 <!--                    app:tint="@color/white" />-->
-            </FrameLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <ImageView
                 android:id="@+id/message_img"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxWidth="@dimen/_120sdp"
                 android:minWidth="@dimen/_30sdp"
                 android:minHeight="@dimen/_30sdp"
                 android:padding="@dimen/_5sdp"
@@ -120,6 +126,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/_5sdp"
+            android:adjustViewBounds="true"
             android:padding="@dimen/_5sdp"
             android:src="@drawable/ic_download"
             android:visibility="invisible"

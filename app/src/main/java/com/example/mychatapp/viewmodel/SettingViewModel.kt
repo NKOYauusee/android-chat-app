@@ -12,8 +12,8 @@ class SettingViewModel(application: Application) : BaseViewModel(application) {
     val serverPort = MutableLiveData<String>("")
 
     fun initServerInfo() {
-        serverIp.postValue(SettingUtil.getServerPort() ?: HttpUrl.IP)
-        serverPort.postValue(SettingUtil.getServerPort() ?: HttpUrl.PORT)
+        serverIp.postValue(SettingUtil.getServerIpAddress().ifEmpty { HttpUrl.IP })
+        serverPort.postValue(SettingUtil.getServerPort().ifEmpty { HttpUrl.PORT })
     }
 
     fun setServerIp(ip: String) {

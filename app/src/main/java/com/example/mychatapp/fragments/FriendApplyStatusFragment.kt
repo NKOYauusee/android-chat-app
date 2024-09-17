@@ -12,12 +12,12 @@ import com.example.common.ui.BaseFragment
 import com.example.common.util.LogUtil
 import com.example.common.util.UserStatusUtil
 import com.example.database.bean.FriendApply
+import com.example.database.enums.ApplyStatusEnum
 import com.example.mychatapp.BR
 import com.example.mychatapp.R
 import com.example.mychatapp.adapter.FriendApplyStatusAdapter
 import com.example.mychatapp.components.MyToast
 import com.example.mychatapp.databinding.FragmentFriendApplyStatusListBinding
-import com.example.database.enums.ApplyStatusEnum
 import com.example.mychatapp.listener.FriendApplyStatusListener
 import com.example.mychatapp.viewmodel.FriendApplyViewModel
 import com.google.gson.Gson
@@ -86,11 +86,12 @@ class FriendApplyStatusFragment :
 
         friendListJob = lifecycleScope.launch(Dispatchers.IO) {
             while (isActive) {
-                if(isVisible){
+                if (isVisible) {
                     ApiServiceHelper.service()
                         .getFriendApplyStatus(UserStatusUtil.getCurLoginUser())
                         .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread()).subscribe(friendApplyStatusList!!)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(friendApplyStatusList!!)
                 }
                 delay(2500)
             }
@@ -111,13 +112,13 @@ class FriendApplyStatusFragment :
     override fun setApplyStatus(friendApply: FriendApply) {
         dialog?.dismiss()
         dialog = AlertDialog.Builder(context)
-            .setTitle("确定同意添加对方为好友")
-            .setPositiveButton("同意") { dialog, _ ->
+            .setTitle(getString(R.string.info_confirm_add_as_friend))
+            .setPositiveButton(getString(R.string.confirm)) { dialog, _ ->
                 dialog.dismiss()
                 friendApply.status = ApplyStatusEnum.APPROVED.code
                 setApplyStatusByNet(friendApply)
             }
-            .setNegativeButton("拒绝") { dialog, _ ->
+            .setNegativeButton(getString(R.string.info_refuse)) { dialog, _ ->
                 dialog.dismiss()
                 friendApply.status = ApplyStatusEnum.REJECTED.code
                 setApplyStatusByNet(friendApply)
@@ -133,14 +134,14 @@ class FriendApplyStatusFragment :
         applyRes = object : MyObservable<ResBean<Nothing>>() {
             override fun success(res: ResBean<Nothing>) {
                 if (res.code == 200) {
-                    context?.let { MyToast(it).show("操作成功") }
+                    context?.let { MyToast(it).show(getString(R.string.info_operation_successful)) }
                 } else {
-                    context?.let { MyToast(it).show("添加失败") }
+                    context?.let { MyToast(it).show(getString(R.string.info_add_failed)) }
                 }
             }
 
             override fun failed(e: Throwable) {
-                context?.let { MyToast(it).show("网络异常，添加失败，请稍后再试") }
+                context?.let { MyToast(it).show(getString(R.string.info_network_error_add_failed_try_again)) }
             }
 
         }

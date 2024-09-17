@@ -42,10 +42,16 @@
                 <EditText
                     android:id="@+id/serverIp"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="@dimen/_40sdp"
+                    android:background="@drawable/background_input"
+                    android:imeOptions="actionNext"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:paddingStart="@dimen/_16sdp"
+                    android:paddingEnd="@dimen/_16sdp"
+                    android:textColor="@color/primary_text"
                     android:text="@{vm.serverIp}"
-                    android:background="@color/input_background"
-                    android:padding="@dimen/_5sdp" />
+                    android:textSize="@dimen/_13ssp" />
             </LinearLayout>
 
 
@@ -66,10 +72,16 @@
                 <EditText
                     android:id="@+id/serverPort"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@{vm.serverPort}"
-                    android:background="@color/input_background"
-                    android:padding="@dimen/_5sdp" />
+                    android:layout_height="@dimen/_40sdp"
+                    android:background="@drawable/background_input"
+                    android:imeOptions="actionNext"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:paddingStart="@dimen/_16sdp"
+                    android:paddingEnd="@dimen/_16sdp"
+                    android:textColor="@color/primary_text"
+                    android:textSize="@dimen/_13ssp"
+                    android:text="@{vm.serverPort}" />
             </LinearLayout>
         </LinearLayout>
 

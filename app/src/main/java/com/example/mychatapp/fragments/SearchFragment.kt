@@ -1,6 +1,5 @@
 package com.example.mychatapp.fragments
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.view.View
 import androidx.lifecycle.ViewModelProvider
@@ -40,7 +39,6 @@ class SearchFragment : BaseFragment<FragmentSearchBinding, BaseViewModel>(), Sea
     private var searchJob: Job? = null
 
 
-    @SuppressLint("SetTextI18n")
     override fun show() {
         // 观察 ViewModel 中 searchContent 的变化
         ViewModelProvider(requireActivity())[MainViewModel::class.java].searchContent.observe(

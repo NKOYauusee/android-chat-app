@@ -46,7 +46,7 @@
                 android:gravity="center"
                 android:textSize="@dimen/_13ssp"
                 android:visibility="@{vm.hasResult ? View.INVISIBLE : View.VISIBLE}"
-                android:text="暂无任何搜索结果~~"
+                android:text="@string/info_no_search_results_found"
                 android:textColor="@color/primary_dark"
                 android:textStyle="bold" />
 

@@ -26,8 +26,6 @@ import io.reactivex.schedulers.Schedulers
 class SignInActivity : BaseActivity<ActivitySignInBinding, BaseViewModel>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // 初始化
-        initAppSetting()
 
         // 免登录操作
         verifyToken()
@@ -36,6 +34,12 @@ class SignInActivity : BaseActivity<ActivitySignInBinding, BaseViewModel>() {
         initListener()
 
         SettingUtil.initSystemUserSetting()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 初始化
+        initAppSetting()
     }
 
     private fun initAppSetting() {
@@ -59,13 +63,23 @@ class SignInActivity : BaseActivity<ActivitySignInBinding, BaseViewModel>() {
             )
         }
 
+        dataBinding.settingBtn.setOnClickListener {
+            switchActivity(
+                this,
+                SettingActivity::class.java,
+                R.anim.enter_animation,
+                R.anim.exit_animation,
+                false
+            )
+        }
+
         // 登录
         dataBinding.btSingIn.setOnClickListener {
 
             val email = dataBinding.loginEmail.text.toString()
             val pwd = dataBinding.loginPassword.text.toString()
             if (email.isEmpty() || pwd.isEmpty()) {
-                MyToast(this).show("请检查输入")
+                MyToast(this).show(getString(R.string.info_check_input))
                 return@setOnClickListener
             }
             Log.d("xht", "email: $email, pwd: $pwd")
@@ -88,7 +102,7 @@ class SignInActivity : BaseActivity<ActivitySignInBinding, BaseViewModel>() {
                 override fun success(res: ResBean<UserBean>) {
                     if (res.code != 200 || res.data == null || res.data!!.token.isNullOrEmpty()) {
                         loading(false)
-                        MyToast(mContext).show("登陆失败")
+                        MyToast(mContext).show(getString(R.string.info_login_fail))
                         LogUtil.error("登录失败 -> " + Gson().toJson(res))
                         return
                     }
@@ -110,7 +124,7 @@ class SignInActivity : BaseActivity<ActivitySignInBinding, BaseViewModel>() {
 
                 override fun failed(e: Throwable) {
                     Log.d("xht", "login failed", e)
-                    MyToast(mContext).show("登陆失败")
+                    MyToast(mContext).show(getString(R.string.info_login_fail))
                     loading(false)
                 }
             })

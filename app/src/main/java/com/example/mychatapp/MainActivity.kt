@@ -37,7 +37,9 @@ import com.example.database.bean.UserFriBean
 import com.example.database.helper.ChatListHelper
 import com.example.database.helper.MainUserSelectHelper
 import com.example.database.helper.UserFriendHelper
+import com.example.mychatapp.activities.BlacklistActivity
 import com.example.mychatapp.activities.ChatActivity
+import com.example.mychatapp.activities.SettingActivity
 import com.example.mychatapp.activities.SignInActivity
 import com.example.mychatapp.activities.UserActivity
 import com.example.mychatapp.adapter.MainChatAdapter
@@ -89,7 +91,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (UserStatusUtil.getIsSignIn() && UserStatusUtil.getCurLoginUser().isNotBlank()) {
-            MyToast(mContext).show("登录成功")
+            MyToast(mContext).show(getString(R.string.info_login_success))
         }
 
         if (!PermissionUtil.hasPermissions(this)) {
@@ -109,6 +111,38 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
             UserStatusUtil.getLoginToken()
         )
         reqOfflineMsg()
+
+        initMenu()
+    }
+
+    private fun initMenu() {
+        val menu = dataBinding.navView.menu
+        val setting = menu.findItem(R.id.nav_settings)
+        val blackList = menu.findItem(R.id.nav_blacklist)
+
+        setting.setOnMenuItemClickListener {
+            switchActivity(
+                this,
+                SettingActivity::class.java,
+                R.anim.enter_animation,
+                R.anim.exit_animation,
+                false
+            )
+
+            true
+        }
+
+        blackList.setOnMenuItemClickListener {
+            switchActivity(
+                this,
+                BlacklistActivity::class.java,
+                R.anim.enter_animation,
+                R.anim.exit_animation,
+                false
+            )
+
+            true
+        }
     }
 
     override fun onResume() {
@@ -159,9 +193,9 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         dataBinding.btnLogout.setOnClickListener {
             showDialog(
                 context = this,
-                positiveText = "确认",
-                negativeText = "取消",
-                title = "退出登录"
+                positiveText = getString(R.string.confirm),
+                negativeText = getString(R.string.cancel),
+                title = getString(R.string.info_logout)
             )
         }
 
@@ -317,8 +351,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
     override fun deleteMsg(target: HasChatBean, callback: () -> Unit) {
         dialog?.dismiss()
         dialog = AlertDialog.Builder(this)
-            .setTitle("确定删除?")
-            .setPositiveButton("确定") { dialog, _ ->
+            .setTitle(getString(R.string.info_confirm_delete))
+            .setPositiveButton(getString(R.string.confirm)) { dialog, _ ->
                 dialog.dismiss()
                 //friend.status = FriendStatusEnum.BLACKLIST.statusCode
                 callback()
@@ -326,7 +360,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
                     MainUserSelectHelper.delete(this@MainActivity, target)
                 }
             }
-            .setNegativeButton("取消") { dialog, _ ->
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                 dialog.dismiss()
             }
             .create()
@@ -484,7 +518,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
             .subscribe(object : MyObservable<ResBean<String>>() {
                 override fun success(res: ResBean<String>) {
                     if (res.code == 200 && !res.data.isNullOrEmpty()) {
-                        MyToast(this@MainActivity).show("上传成功")
+                        MyToast(this@MainActivity).show(getString(R.string.info_upload_success))
                         UserStatusUtil.setUserAvatar(res.data!!)
 
                         val header = dataBinding.navView.getHeaderView(0)
@@ -496,12 +530,12 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
                             .into(profile)
                         return
                     } else
-                        MyToast(this@MainActivity).show("上传失败")
+                        MyToast(this@MainActivity).show(getString(R.string.info_upload_fail))
                 }
 
                 override fun failed(e: Throwable) {
                     Log.d(TAG, "failed: ", e)
-                    MyToast(this@MainActivity).show("上传失败")
+                    MyToast(this@MainActivity).show(getString(R.string.info_upload_fail))
                 }
 
             })
@@ -770,4 +804,5 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
             }
         }
     }
+
 }
