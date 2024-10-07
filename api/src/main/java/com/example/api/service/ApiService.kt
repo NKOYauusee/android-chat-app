@@ -3,6 +3,7 @@ package com.example.api.service
 import com.example.api.bean.ResBean
 import com.example.database.bean.ChatBean
 import com.example.database.bean.FriendApply
+import com.example.database.bean.GroupBean
 import com.example.database.bean.UserBean
 import com.example.database.bean.UserFriBean
 import io.reactivex.Observable
@@ -140,5 +141,12 @@ interface ApiService {
         @Part("userId") userId: RequestBody,
         @Part("fileName") fileName: RequestBody,
         @Part("chunkIndex") chunkIndex: RequestBody
+    ): Observable<ResBean<String>>
+
+
+    // 创建群组
+    @POST("group/create")
+    fun createGroup(
+        @Body groupBean: GroupBean
     ): Observable<ResBean<String>>
 }

@@ -1,6 +1,8 @@
 package com.example.mychatapp.activities
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -507,5 +509,26 @@ class ChatActivity : BaseActivity<ActivityChatBinding, ChatViewModel>(), ChatMsg
                 //LogUtil.info("$size")
             }
         }
+    }
+
+    private var dialog: Dialog? = null
+    override fun deleteMsg(chat: ChatBean, callback: () -> Unit) {
+        dialog?.dismiss()
+        dialog = AlertDialog.Builder(this).setTitle("确定删除该条聊天记录")
+            .setPositiveButton(getString(R.string.confirm)) { dialog, _ ->
+                dialog.dismiss()
+
+                lifecycleScope.launch(Dispatchers.IO) {
+                    ChatListHelper.deleteOneMsg(this@ChatActivity, chat)
+                    withContext(Dispatchers.Main) {
+                        callback()
+                    }
+                }
+            }.setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                dialog.dismiss()
+            }.create()
+        dialog?.setCanceledOnTouchOutside(false)
+        dialog?.show()
+        supportActionBar?.hide()
     }
 }

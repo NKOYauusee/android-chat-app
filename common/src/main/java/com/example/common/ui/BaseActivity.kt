@@ -5,7 +5,9 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.os.Bundle
+import android.os.Handler
 import android.view.KeyEvent
 import android.view.View
 import android.view.Window
@@ -18,9 +20,11 @@ import com.example.common.common.AppManager
 import com.example.common.common.DataBindingConfig
 import com.example.common.util.ClazzUtil
 import com.example.common.util.DensityUtils
+import com.example.common.util.SettingUtil
 import com.example.common.viewmodel.BaseViewModel
 import com.tencent.mmkv.MMKV
 import java.lang.reflect.ParameterizedType
+import java.util.Locale
 
 
 @Suppress("DEPRECATION")
@@ -63,11 +67,9 @@ abstract class BaseActivity<T : ViewDataBinding, VM : BaseViewModel> : AppCompat
 
         // 创建ViewModel
         getViewModelType()?.let {
-            viewModel =
-                ViewModelProvider(
-                    this,
-                    ViewModelProvider.AndroidViewModelFactory(application)
-                )[it]
+            viewModel = ViewModelProvider(
+                this, ViewModelProvider.AndroidViewModelFactory(application)
+            )[it]
         }
         //获取配置
         val dataBindingConfig = getDataBindingConfig()
@@ -76,8 +78,10 @@ abstract class BaseActivity<T : ViewDataBinding, VM : BaseViewModel> : AppCompat
         //绑定生命周期
         dataBinding.lifecycleOwner = this
         //设置参数
-        if (dataBindingConfig.vmVariableId != -1)
-            dataBinding.setVariable(dataBindingConfig.vmVariableId, viewModel)
+        if (dataBindingConfig.vmVariableId != -1) dataBinding.setVariable(
+            dataBindingConfig.vmVariableId,
+            viewModel
+        )
         for (index in 0 until dataBindingConfig.bindingParams.size()) {
             dataBinding.setVariable(
                 dataBindingConfig.bindingParams.keyAt(index),
@@ -98,6 +102,26 @@ abstract class BaseActivity<T : ViewDataBinding, VM : BaseViewModel> : AppCompat
             //隐藏导航栏
             hideSystemNavigationBar(window)
         }
+
+        // 语言设置
+        setLanguage()
+    }
+
+    private fun setLanguage() {
+        // 获取当前的系统语言
+        val currentLanguage = Locale.getDefault().language
+
+        if (currentLanguage != SettingUtil.getLanguage()) {
+            val locale = Locale(SettingUtil.getLanguage())
+            Locale.setDefault(locale)
+
+            val resources: Resources = getResources()
+            val config = resources.configuration
+            val dm = resources.displayMetrics
+
+            config.setLocale(locale)
+            resources.updateConfiguration(config, dm)
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -111,8 +135,7 @@ abstract class BaseActivity<T : ViewDataBinding, VM : BaseViewModel> : AppCompat
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         //隐藏系统状态栏.虚拟按键
-        if (hasFocus)
-            hideSystemNavigationBar(window)
+        if (hasFocus) hideSystemNavigationBar(window)
     }
 
     override fun onDestroy() {
@@ -139,8 +162,7 @@ abstract class BaseActivity<T : ViewDataBinding, VM : BaseViewModel> : AppCompat
 
 
     // 返回键监听
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        /*
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {/*
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             return true
         }
@@ -165,14 +187,10 @@ abstract class BaseActivity<T : ViewDataBinding, VM : BaseViewModel> : AppCompat
     }
 
     fun switchActivity(
-        intent: Intent,
-        enterAni: Int = 0,
-        exitAni: Int = 0,
-        isFinish: Boolean = false
+        intent: Intent, enterAni: Int = 0, exitAni: Int = 0, isFinish: Boolean = false
     ) {
         startActivity(intent)
         overridePendingTransition(enterAni, exitAni)
-
         if (isFinish) finish()
     }
 
@@ -184,17 +202,14 @@ abstract class BaseActivity<T : ViewDataBinding, VM : BaseViewModel> : AppCompat
     ) {
 
         dialog?.dismiss()
-        dialog = AlertDialog.Builder(context)
-            .setTitle(title)
+        dialog = AlertDialog.Builder(context).setTitle(title)
             .setPositiveButton(positiveText) { dialog, _ ->
                 dialog.dismiss()
                 onPositiveButtonClick()
-            }
-            .setNegativeButton(negativeText) { dialog, _ ->
+            }.setNegativeButton(negativeText) { dialog, _ ->
                 dialog.dismiss()
                 onNegativeButtonClick()
-            }
-            .create()
+            }.create()
         dialog?.setCanceledOnTouchOutside(false)
         dialog?.show()
         supportActionBar?.hide()

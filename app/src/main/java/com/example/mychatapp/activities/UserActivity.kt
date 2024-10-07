@@ -81,6 +81,16 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
             showBatchDelete(isClickBatchManage)
         }
 
+        dataBinding.imgCreateGroup.setOnClickListener {
+            switchActivity(
+                this,
+                GroupActivity::class.java,
+                R.anim.enter_animation,
+                R.anim.exit_fade_out_ani,
+                false
+            )
+        }
+
         dataBinding.deleteFriendBtn.setOnClickListener {
             val size = dataBinding.userRecycleView.childCount
             val selectList = mutableListOf<Int>()
@@ -122,11 +132,18 @@ class UserActivity : BaseActivity<ActivityUserBinding, UserViewModel>(), UserLis
                                 return
                             }
 
+                            MyToast(this@UserActivity).show(getString(R.string.info_delete_successfully))
                             userAdapter?.batchRemove(posList)
                             showBatchDelete(false)
 
                             lifecycleScope.launch(Dispatchers.IO) {
                                 UserFriendHelper.batchDeleteFriend(this@UserActivity, list)
+
+                                for (friend in list) {
+                                    MainUserSelectHelper.deleteMainHasChatSow(
+                                        this@UserActivity, friend.owner, friend.email
+                                    )
+                                }
                             }
                         }
 

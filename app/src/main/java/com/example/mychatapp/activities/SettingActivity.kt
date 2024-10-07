@@ -3,13 +3,19 @@ package com.example.mychatapp.activities
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import androidx.lifecycle.lifecycleScope
+import com.example.common.common.AppManager
 import com.example.common.common.DataBindingConfig
 import com.example.common.ui.BaseActivity
 import com.example.common.util.LogUtil
+import com.example.common.util.SettingUtil
+import com.example.common.util.ToastUtil
 import com.example.mychatapp.BR
 import com.example.mychatapp.R
 import com.example.mychatapp.databinding.ActivitySettingBinding
 import com.example.mychatapp.viewmodel.SettingViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class SettingActivity : BaseActivity<ActivitySettingBinding, SettingViewModel>() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,6 +26,27 @@ class SettingActivity : BaseActivity<ActivitySettingBinding, SettingViewModel>()
     }
 
     private fun initListener() {
+        dataBinding.zh.setOnClickListener {
+            SettingUtil.setLanguage("zh")
+
+            lifecycleScope.launch {
+                ToastUtil.showToastMsg("修改成功", this@SettingActivity)
+                delay(700)
+                AppManager.instant.restartApp(this@SettingActivity)
+            }
+        }
+
+        dataBinding.en.setOnClickListener {
+            SettingUtil.setLanguage("en")
+
+            lifecycleScope.launch {
+                ToastUtil.showToastMsg("修改成功", this@SettingActivity)
+                delay(700)
+                AppManager.instant.restartApp(this@SettingActivity)
+            }
+        }
+
+
         // 基本设置
         dataBinding.serverIp.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {

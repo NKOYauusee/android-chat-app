@@ -33,6 +33,10 @@ class ChatBean : Serializable, OpenImageUrl {
 
     @ColumnInfo("msgType")
     var msgType: Int = 0
+
+    @ColumnInfo("senderAvatar")
+    var senderAvatar: String = ""
+
     override fun getImageUrl(): String {
         return getPath(this.message, this.msgType) ?: ""
     }
@@ -66,7 +70,4 @@ class ChatBean : Serializable, OpenImageUrl {
         return src.substring(startIdx, endIdx)
     }
 
-    private fun extractFileName(url: String): String {
-        return url.substringAfterLast("/")
-    }
 }

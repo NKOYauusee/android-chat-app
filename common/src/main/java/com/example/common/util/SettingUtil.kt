@@ -35,4 +35,13 @@ object SettingUtil {
         SpUtil.setParam(Constants.SERVER_PORT, serverPort)
     }
 
+
+    fun setLanguage(lang: String) {
+        val l = if (lang != "en" && lang != "zh") "zh" else lang
+        SpUtil.setParam(Constants.APP_LANG, l)
+    }
+
+    fun getLanguage(): String {
+        return SpUtil.getParam(Constants.APP_LANG, "zh")
+    }
 }

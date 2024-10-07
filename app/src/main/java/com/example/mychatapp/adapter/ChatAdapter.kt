@@ -196,6 +196,17 @@ class ChatAdapter(
         val chat = chatList[position]
         val context = holder.itemView.context
 
+        //长按删除
+        holder.itemView.setOnLongClickListener {
+            listener.deleteMsg(chat) {
+                chatList.removeAt(position)
+                notifyItemRemoved(position)
+            }
+
+            true
+        }
+
+
         // basic
         dataBinding.textDateTime.text = DateFormatUtil.formatTime(chat.sendTime)
 
@@ -269,6 +280,15 @@ class ChatAdapter(
         val dataBinding = holder.dataBinding
         val chat = chatList[position]
         val context = holder.itemView.context
+
+        holder.itemView.setOnLongClickListener {
+            listener.deleteMsg(chat) {
+                chatList.removeAt(position)
+                notifyItemRemoved(position)
+            }
+
+            true
+        }
 
         // basic
         dataBinding.textDateTime.text = DateFormatUtil.formatTime(chat.sendTime)

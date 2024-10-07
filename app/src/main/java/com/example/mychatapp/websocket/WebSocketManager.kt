@@ -60,12 +60,9 @@ class WebSocketManager {
         websocketClient?.loadMsg = {
             val chat = gson.fromJson(it, ChatBean::class.java)
             chat.owner = UserStatusUtil.getCurLoginUser()
+
             LogUtil.info("消息：${gson.toJson(chat)}")
             GlobalScope.launch(Dispatchers.IO) {
-//                val friend =
-//                    if (chat.sender == UserStatusUtil.getCurLoginUser()) chat.receiver
-//                    else chat.sender
-//                ChatListHelper.saveOneChat(context, chat, friend!!)
                 ChatListHelper.saveOneChat(context, chat)
                 MainUserSelectHelper.updateMainUser(context, chat)
             }

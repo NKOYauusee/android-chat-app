@@ -48,6 +48,7 @@ import com.example.mychatapp.databinding.ActivityMainBinding
 import com.example.mychatapp.fragments.FriendApplyStatusFragment
 import com.example.mychatapp.fragments.SearchFragment
 import com.example.mychatapp.listener.MainChatListener
+import com.example.mychatapp.util.GroupUtil
 import com.example.mychatapp.util.HttpHelper
 import com.example.mychatapp.util.SelectMediaHelper
 import com.example.mychatapp.util.UserUtil
@@ -270,8 +271,13 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
         WebSocketManager.instance.receiveMessage(this@MainActivity) {
             //更新数据库消息显示内容
             lifecycleScope.launch(Dispatchers.IO) {
-                val email =
+                val email = if (!GroupUtil.isGroup(it.receiver)) {
                     if (it.sender == UserStatusUtil.getCurLoginUser()) it.receiver else it.sender
+                } else {
+                    it.receiver
+                }
+
+
 
                 MainUserSelectHelper.updateMsgAndTime(
                     this@MainActivity,
@@ -284,12 +290,19 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
             lifecycleScope.launch(Dispatchers.Main) {
                 Log.d("xht", "Main 消息提示")
                 val hasChatBean = HasChatBean()
+
                 hasChatBean.user = UserStatusUtil.getCurLoginUser()
-                //对方email
-                hasChatBean.email =
-                    if (it.sender == hasChatBean.user) it.receiver else it.sender
-                hasChatBean.nickname =
-                    if (it.sender == hasChatBean.user) it.receiverName else it.senderName
+
+                if (!GroupUtil.isGroup(it.receiver)) {
+                    hasChatBean.email =
+                        if (it.sender == hasChatBean.user) it.receiver else it.sender
+
+                    hasChatBean.nickname =
+                        if (it.sender == hasChatBean.user) it.receiverName else it.senderName
+                } else {
+                    hasChatBean.email = it.receiver
+                    hasChatBean.nickname = it.receiverName
+                }
 
                 hasChatBean.sendTime = it.sendTime
                 hasChatBean.newMsg = it.message
@@ -301,7 +314,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
                     )
                 }
 
-                LogUtil.info(gson.toJson(hasChatBean.avatar))
+                LogUtil.info(gson.toJson(hasChatBean))
+                //LogUtil.info(gson.toJson(hasChatBean.avatar))
 
                 hasChatBean.isRead = false
                 //LogUtil.info("待更新 -> ${gson.toJson(hasChatBean)}")
@@ -398,7 +412,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), MainCha
                     val set = mutableSetOf<String>()
 
                     for (c in res.data!!) {
-                        set.add(c.owner)
+                        c.owner = UserStatusUtil.getCurLoginUser()
+                        set.add(c.sender)
                     }
 
                     LogUtil.info("加载离线消息")

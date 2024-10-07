@@ -1,6 +1,5 @@
 package com.example.mychatapp.util
 
-import com.example.api.bean.HttpUrl
 import com.example.common.util.UserStatusUtil
 import com.example.database.bean.ChatBean
 import com.example.database.enums.MessageType
@@ -22,6 +21,8 @@ object ChatHelper {
         //聊天记录所有者
         chatBean.owner = UserStatusUtil.getCurLoginUser()
         chatBean.msgType = type
+
+        chatBean.senderAvatar = UserStatusUtil.getUserAvatar()
 
         val msgType = MessageType.getDescFromType(type)
         if (msgType == null) chatBean.message = msg

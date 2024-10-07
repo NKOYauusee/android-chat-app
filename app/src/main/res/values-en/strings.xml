@@ -61,4 +61,5 @@
     <string name="blacklist">BLACKLIST</string>
     <string name="no_result">Nothing</string>
     <string name="setting">Setting</string>
+    <string name="language">Language</string>
 </resources>

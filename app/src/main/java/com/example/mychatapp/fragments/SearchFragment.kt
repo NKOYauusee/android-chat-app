@@ -24,6 +24,7 @@ import com.example.mychatapp.databinding.FragmentSearchBinding
 import com.example.mychatapp.listener.SearchListener
 import com.example.mychatapp.listener.UserListener
 import com.example.mychatapp.viewmodel.MainViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch

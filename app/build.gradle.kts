@@ -92,7 +92,6 @@ dependencies {
     implementation("io.github.FlyJingFish.OpenImage:OpenImageFullLib:2.2.6")
     implementation("com.github.CarGuo.GSYVideoPlayer:GSYVideoPlayer:v9.0.0-release-jitpack")
 
-
     //imagePreview 不适配androidx
     //implementation("com.ycjiang:ImagePreview:2.3.5")
     //implementation("com.github.chrisbanes:PhotoView:1.3.1")

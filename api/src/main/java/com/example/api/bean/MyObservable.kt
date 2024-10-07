@@ -16,7 +16,6 @@ abstract class MyObservable<T> : Observer<T> {
 
     override fun onNext(t: T & Any) {
         success(t)
-
     }
 
     abstract fun success(res: T)

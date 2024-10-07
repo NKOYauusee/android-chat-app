@@ -49,8 +49,8 @@
                     android:inputType="text"
                     android:paddingStart="@dimen/_16sdp"
                     android:paddingEnd="@dimen/_16sdp"
-                    android:textColor="@color/primary_text"
                     android:text="@{vm.serverIp}"
+                    android:textColor="@color/primary_text"
                     android:textSize="@dimen/_13ssp" />
             </LinearLayout>
 
@@ -79,9 +79,42 @@
                     android:inputType="text"
                     android:paddingStart="@dimen/_16sdp"
                     android:paddingEnd="@dimen/_16sdp"
+                    android:text="@{vm.serverPort}"
                     android:textColor="@color/primary_text"
-                    android:textSize="@dimen/_13ssp"
-                    android:text="@{vm.serverPort}" />
+                    android:textSize="@dimen/_13ssp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/_10sdp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/_15sdp"
+                    android:text="@string/language"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_14sdp" />
+                <!-- 空白填充控件 -->
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <Button
+                    android:id="@+id/zh"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_20sdp"
+                    android:text="zh" />
+
+                <Button
+                    android:id="@+id/en"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="en" />
             </LinearLayout>
         </LinearLayout>
 

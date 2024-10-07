@@ -45,7 +45,7 @@ public class DensityUtils {
         //计算目标density scaledDensity
 
 
-        float targetDensity = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels) / WIDTH;//1080/360=3;
+        float targetDensity = Math.min(displayMetrics.widthPixels, displayMetrics.heightPixels) / WIDTH;    //1080/360=3;
         float targetScaleDensity = targetDensity * (appScaleDensity / appDensity);
         int targetDensityDpi = (int) (targetDensity * 160);
         //替换Activity的值

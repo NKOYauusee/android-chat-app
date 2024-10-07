@@ -119,7 +119,8 @@ class ApplicantActivity : BaseActivity<ActivityApplicantBinding, ApplicantViewMo
                         if (res.code == 200 && !res.data.isNullOrEmpty()) {
                             callback(res.data!!)
                         }
-                        viewModel.hasResult.postValue(true)
+
+                        viewModel.hasResult.postValue(!res.data.isNullOrEmpty())
                         //LogUtil.info(Gson().toJson(res))
                         LogUtil.info("搜索结果请求成功")
                     }

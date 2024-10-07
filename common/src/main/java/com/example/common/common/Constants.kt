@@ -21,6 +21,7 @@ class Constants {
 
         const val SERVER_IP = "SERVER_IP"
         const val SERVER_PORT = "SERVER_PORT"
+        const val APP_LANG = "APP_LANG"
 
         const val ONE_DAY: Long = 24 * 60 * 60 * 1000
 

@@ -27,9 +27,6 @@ class SignInActivity : BaseActivity<ActivitySignInBinding, BaseViewModel>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 免登录操作
-        verifyToken()
-
         init()
         initListener()
 
@@ -40,6 +37,8 @@ class SignInActivity : BaseActivity<ActivitySignInBinding, BaseViewModel>() {
         super.onResume()
         // 初始化
         initAppSetting()
+        // 免登录操作
+        verifyToken()
     }
 
     private fun initAppSetting() {
@@ -142,6 +141,7 @@ class SignInActivity : BaseActivity<ActivitySignInBinding, BaseViewModel>() {
 
     //免登录操作
     private fun verifyToken() {
+        LogUtil.info("免登录操作")
         val email = UserStatusUtil.getCurLoginUser()
         val token = UserStatusUtil.getLoginToken()
 

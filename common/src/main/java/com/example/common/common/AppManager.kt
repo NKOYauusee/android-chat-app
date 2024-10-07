@@ -4,9 +4,12 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
+import android.content.Intent
+import android.os.Process
 import android.text.TextUtils
 import java.util.Stack
 import kotlin.system.exitProcess
+
 
 class AppManager private constructor() {
     private val activityStack = Stack<Activity>()
@@ -89,4 +92,16 @@ class AppManager private constructor() {
 
     }
 
+
+    fun restartApp(context: Context) {
+        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+        if (intent != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        }
+
+        // 杀掉当前进程
+        Process.killProcess(Process.myPid())
+        exitProcess(0)
+    }
 }

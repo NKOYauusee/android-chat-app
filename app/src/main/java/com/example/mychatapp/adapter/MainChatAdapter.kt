@@ -1,6 +1,5 @@
 package com.example.mychatapp.adapter
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -80,6 +79,8 @@ class MainChatAdapter(
 
         chatList.forEachIndexed { idx, item ->
             if (item.email == hasChatBean.email) {
+                LogUtil.info("item email ${item.email}")
+                LogUtil.info("hasChatBean email ${hasChatBean.email}")
                 item.sendTime = hasChatBean.sendTime
                 item.newMsg = hasChatBean.newMsg
                 notifyItemChanged(idx, true)

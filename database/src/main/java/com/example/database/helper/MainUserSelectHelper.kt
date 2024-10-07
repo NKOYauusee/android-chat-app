@@ -1,6 +1,8 @@
 package com.example.database.helper
 
 import android.content.Context
+import com.example.common.util.GroupUtil
+import com.example.common.util.LogUtil
 import com.example.common.util.UserStatusUtil
 import com.example.database.UserDatabase
 import com.example.database.bean.ChatBean
@@ -42,10 +44,19 @@ object MainUserSelectHelper {
         hasChatBean.sendTime = chatBean.sendTime
 
         //对方邮箱
-        hasChatBean.email =
-            if (chatBean.sender == hasChatBean.user) chatBean.receiver else chatBean.sender
-        hasChatBean.nickname =
-            if (chatBean.sender == hasChatBean.user) chatBean.receiverName else chatBean.senderName
+        if (!GroupUtil.isGroup(chatBean.receiver)) {
+            hasChatBean.email =
+                if (chatBean.sender == hasChatBean.user) chatBean.receiver else chatBean.sender
+
+            hasChatBean.nickname =
+                if (chatBean.sender == hasChatBean.user) chatBean.receiverName else chatBean.senderName
+        } else {
+            hasChatBean.email = chatBean.receiver
+            hasChatBean.nickname = chatBean.receiverName
+        }
+
+
+        LogUtil.info("nko -> ${hasChatBean.email}")
 
         hasChatBean.isRead = chatBean.sender == UserStatusUtil.getCurLoginUser()
 

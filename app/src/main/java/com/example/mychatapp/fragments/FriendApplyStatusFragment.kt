@@ -3,6 +3,7 @@ package com.example.mychatapp.fragments
 import android.app.AlertDialog
 import android.app.Dialog
 import android.util.Log
+import android.view.View
 import androidx.lifecycle.lifecycleScope
 import com.example.api.bean.MyObservable
 import com.example.api.bean.ResBean
@@ -52,12 +53,12 @@ class FriendApplyStatusFragment :
     private fun initAndStartReqFriendApplyStatusList() {
         //viewModel.hasApplyData.postValue(false)
 
-        applyAdapter = FriendApplyStatusAdapter(
-            this@FriendApplyStatusFragment,
-            mutableListOf<FriendApply>().apply {
-                add(FriendApply())
-            }
-        )
+//        applyAdapter = FriendApplyStatusAdapter(
+//            this@FriendApplyStatusFragment,
+//            mutableListOf<FriendApply>().apply {
+//                add(FriendApply())
+//            }
+//        )
 
         dataBinding.friendStatusList.adapter = applyAdapter
         LogUtil.info("开始请求好友申请列表")
@@ -66,7 +67,7 @@ class FriendApplyStatusFragment :
             override fun success(res: ResBean<List<FriendApply>>) {
                 LogUtil.info("好友申请请求结果 成功 ->" + Gson().toJson(res.data!!))
                 viewModel.hasApplyData.postValue(!res.data.isNullOrEmpty())
-
+                dataBinding.progress.visibility = View.INVISIBLE
                 //LogUtil.info(res.data!!.toMutableList().size.toString())
                 lifecycleScope.launch(Dispatchers.Main) {
                     delay(500)
@@ -79,6 +80,7 @@ class FriendApplyStatusFragment :
             }
 
             override fun failed(e: Throwable) {
+                dataBinding.progress.visibility = View.INVISIBLE
                 Log.d("xht", "failed friendApplyStatusList", e)
                 viewModel.hasApplyData.postValue(false)
             }
