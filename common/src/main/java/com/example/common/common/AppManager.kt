@@ -89,19 +89,16 @@ class AppManager private constructor() {
         activityManager.killBackgroundProcesses(context.packageName)
         exitProcess(0)
         //android.os.Process.killProcess(android.os.Process.myPid());
-
     }
 
 
     fun restartApp(context: Context) {
+        exitApp(context)
+
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
         if (intent != null) {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
         }
-
-        // 杀掉当前进程
-        Process.killProcess(Process.myPid())
-        exitProcess(0)
     }
 }

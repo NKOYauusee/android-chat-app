@@ -2,12 +2,12 @@ package com.example.common.ui
 
 import android.app.AlertDialog
 import android.app.Dialog
+import android.app.LocaleManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Bundle
-import android.os.Handler
 import android.view.KeyEvent
 import android.view.View
 import android.view.Window
@@ -20,6 +20,7 @@ import com.example.common.common.AppManager
 import com.example.common.common.DataBindingConfig
 import com.example.common.util.ClazzUtil
 import com.example.common.util.DensityUtils
+import com.example.common.util.LogUtil
 import com.example.common.util.SettingUtil
 import com.example.common.viewmodel.BaseViewModel
 import com.tencent.mmkv.MMKV
@@ -92,29 +93,31 @@ abstract class BaseActivity<T : ViewDataBinding, VM : BaseViewModel> : AppCompat
         //把当前页面添加集合统一管理
         AppManager.instant.addActivity(this)
         MMKV.initialize(this)
+
+        setLanguage()
     }
 
     abstract fun getDataBindingConfig(): DataBindingConfig
 
     override fun onResume() {
         super.onResume()
+        // 语言设置
         if (isFullScreen) {
             //隐藏导航栏
             hideSystemNavigationBar(window)
         }
-
-        // 语言设置
-        setLanguage()
     }
 
-    private fun setLanguage() {
+    fun setLanguage() {
         // 获取当前的系统语言
         val currentLanguage = Locale.getDefault().language
+        LogUtil.info("lang $currentLanguage")
 
+        LogUtil.info("lang ${SettingUtil.getLanguage()}")
         if (currentLanguage != SettingUtil.getLanguage()) {
             val locale = Locale(SettingUtil.getLanguage())
             Locale.setDefault(locale)
-
+            LogUtil.info("lang change")
             val resources: Resources = getResources()
             val config = resources.configuration
             val dm = resources.displayMetrics

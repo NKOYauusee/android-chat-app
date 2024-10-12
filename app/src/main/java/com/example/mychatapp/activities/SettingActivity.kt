@@ -28,9 +28,9 @@ class SettingActivity : BaseActivity<ActivitySettingBinding, SettingViewModel>()
     private fun initListener() {
         dataBinding.zh.setOnClickListener {
             SettingUtil.setLanguage("zh")
+            ToastUtil.showToastMsg("修改成功", this@SettingActivity)
 
             lifecycleScope.launch {
-                ToastUtil.showToastMsg("修改成功", this@SettingActivity)
                 delay(700)
                 AppManager.instant.restartApp(this@SettingActivity)
             }
@@ -38,9 +38,9 @@ class SettingActivity : BaseActivity<ActivitySettingBinding, SettingViewModel>()
 
         dataBinding.en.setOnClickListener {
             SettingUtil.setLanguage("en")
+            ToastUtil.showToastMsg("修改成功", this@SettingActivity)
 
             lifecycleScope.launch {
-                ToastUtil.showToastMsg("修改成功", this@SettingActivity)
                 delay(700)
                 AppManager.instant.restartApp(this@SettingActivity)
             }
